@@ -9,9 +9,10 @@ import { getImageUrl } from '@/lib/tmdb-utils';
 import { Star, CalendarDays, Tv, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 export default function TVShowDetailPage() {
-  const params = useParams<{ id: string }>(); 
+  const params = useParams<{ id: string }>();
   const [tvShow, setTvShow] = useState<TVShow | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,7 +20,11 @@ export default function TVShowDetailPage() {
 
   useEffect(() => {
     async function fetchShow() {
-      if (!params || !params.id) return; 
+      if (!params?.id) {
+        setIsLoading(false);
+        setErrorOccurred(true); // No ID, so error
+        return;
+      }
       try {
         setIsLoading(true);
         const showData = await getTVShowDetails(Number(params.id));
@@ -33,14 +38,13 @@ export default function TVShowDetailPage() {
         setIsLoading(false);
       }
     }
-    if (params?.id) {
-      fetchShow();
-    }
-  }, [params]); 
+    fetchShow();
+  }, [params]);
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
+        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
         <p className="text-muted-foreground text-lg">Loading TV show details...</p>
       </div>
     );
@@ -139,9 +143,9 @@ export default function TVShowDetailPage() {
                       <iframe
                           src={playerUrl}
                           title={`Watch ${tvShow.name}`}
-                          allowFullScreen
+                          allow="fullscreen"
                           className="w-full h-full"
-                          sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-top-navigation"
+                          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-popups-to-escape-sandbox"
                       ></iframe>
                   </div>
               )}

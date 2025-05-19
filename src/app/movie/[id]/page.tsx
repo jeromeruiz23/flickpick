@@ -9,9 +9,10 @@ import { getImageUrl } from '@/lib/tmdb-utils';
 import { Star, CalendarDays, Clapperboard, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 export default function MovieDetailPage() {
-  const params = useParams<{ id: string }>(); 
+  const params = useParams<{ id: string }>();
   const [movie, setMovie] = useState<Movie | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,7 +20,11 @@ export default function MovieDetailPage() {
 
   useEffect(() => {
     async function fetchMovie() {
-      if (!params || !params.id) return; 
+      if (!params?.id) {
+        setIsLoading(false);
+        setErrorOccurred(true); // No ID, so error
+        return;
+      }
       try {
         setIsLoading(true);
         const movieData = await getMovieDetails(Number(params.id));
@@ -33,15 +38,14 @@ export default function MovieDetailPage() {
         setIsLoading(false);
       }
     }
-    if (params?.id) {
-      fetchMovie();
-    }
-  }, [params]); 
-  
+    fetchMovie();
+  }, [params]);
+
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
+        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
         <p className="text-muted-foreground text-lg">Loading movie details...</p>
       </div>
     );
@@ -140,9 +144,9 @@ export default function MovieDetailPage() {
                       <iframe
                           src={playerUrl}
                           title={`Watch ${movie.title}`}
-                          allowFullScreen
+                          allow="fullscreen"
                           className="w-full h-full"
-                          sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-top-navigation"
+                          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-popups-to-escape-sandbox"
                       ></iframe>
                   </div>
               )}
