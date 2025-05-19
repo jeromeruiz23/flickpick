@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import CommentSection from '@/components/CommentSection';
 
 export default function TVShowDetailPage() {
   const params = useParams<{ id: string }>();
@@ -154,8 +155,8 @@ export default function TVShowDetailPage() {
               <p className="text-foreground/80 leading-relaxed whitespace-pre-wrap">{tvShow.overview}</p>
             </div>
 
-            <div className="mt-8 space-x-2 space-y-4">
-               <h3 className="text-lg font-semibold text-foreground">Available Actions:</h3>
+            <div className="mt-8 space-y-4">
+               <h3 className="text-lg font-semibold text-foreground mb-2">Available Actions:</h3>
                <div className="flex flex-wrap gap-2 items-center">
                 <Button onClick={handleTogglePlayer} variant="primary" size="lg">
                     <Play className="mr-2 h-5 w-5" /> Watch on VidSrc
@@ -196,23 +197,27 @@ export default function TVShowDetailPage() {
                     : "opacity-0 max-h-0 mt-0"
                 )}
               >
-                <div className="flex justify-between items-center mb-2">
-                    <p className="text-sm text-muted-foreground">Playing on: VidSrc</p>
-                     <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
-                        <X className="h-4 w-4" />
-                        <span className="sr-only">Close Player</span>
-                    </Button>
-                </div>
-                <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
-                    <iframe
-                        src={playerUrl}
-                        title={`Watch ${tvShow.name} on VidSrc`}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                        sandbox="allow-forms allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts allow-popups-to-escape-sandbox"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        className="w-full h-full"
-                    ></iframe>
-                </div>
+                {playerVisible && (
+                  <>
+                    <div className="flex justify-between items-center mb-2">
+                        <p className="text-sm text-muted-foreground">Playing on: VidSrc</p>
+                         <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Close Player</span>
+                        </Button>
+                    </div>
+                    <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
+                        <iframe
+                            src={playerUrl}
+                            title={`Watch ${tvShow.name} on VidSrc`}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                            sandbox="allow-forms allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts allow-popups-to-escape-sandbox"
+                            referrerPolicy="no-referrer-when-downgrade"
+                            className="w-full h-full"
+                        ></iframe>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -243,6 +248,8 @@ export default function TVShowDetailPage() {
             )}
           </div>
         </div>
+        {/* Comment Section */}
+        <CommentSection />
       </div>
     </div>
   );
