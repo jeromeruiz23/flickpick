@@ -57,15 +57,13 @@ export default function TVShowDetailPage() {
           }
         }
 
-        // Set default season and episode
         if (showData.seasons && showData.seasons.length > 0) {
           const firstRegularSeason = showData.seasons.find(s => s.season_number > 0 && s.episode_count > 0);
           if (firstRegularSeason) {
             setSelectedSeason(firstRegularSeason.season_number);
             setCurrentSeasonDetails(firstRegularSeason);
-            setSelectedEpisode(1); // Default to first episode
+            setSelectedEpisode(1); 
           } else {
-            // Fallback if no "regular" seasons (e.g. only "Specials") have episodes
              const anySeasonWithEpisodes = showData.seasons.find(s => s.episode_count > 0);
              if (anySeasonWithEpisodes) {
                 setSelectedSeason(anySeasonWithEpisodes.season_number);
@@ -90,7 +88,6 @@ export default function TVShowDetailPage() {
     if (tvShow && selectedSeason !== null) {
       const seasonDetail = tvShow.seasons?.find(s => s.season_number === selectedSeason);
       setCurrentSeasonDetails(seasonDetail || null);
-      // Reset episode to 1 when season changes, if the new season has episodes
       if (seasonDetail && seasonDetail.episode_count > 0) {
         setSelectedEpisode(1);
       } else {
@@ -104,7 +101,7 @@ export default function TVShowDetailPage() {
 
 
   const handleTogglePlayer = () => {
-    if (selectedSeason !== null && selectedEpisode !== null) {
+    if (tvShow?.id) { // Player can be toggled if tvShow ID exists
       setPlayerVisible(!playerVisible);
     }
   };
@@ -127,11 +124,9 @@ export default function TVShowDetailPage() {
     );
   }
 
-  const playerUrl = (selectedSeason !== null && selectedEpisode !== null && tvShow)
-    ? `https://vidsrc.to/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}`
-    : '';
+  const playerUrl = tvShow ? `https://vidsrc.to/embed/tv/${tvShow.id}` : '';
 
-  const availableSeasons = tvShow.seasons?.filter(s => s.episode_count > 0) || []; // Filter out seasons with no episodes
+  const availableSeasons = tvShow.seasons?.filter(s => s.episode_count > 0) || [];
 
   return (
     <div className="min-h-screen">
@@ -257,9 +252,9 @@ export default function TVShowDetailPage() {
                   onClick={handleTogglePlayer} 
                   variant="primary" 
                   size="lg"
-                  disabled={!selectedSeason || !selectedEpisode || !playerUrl}
+                  disabled={!playerUrl}
                 >
-                    <Play className="mr-2 h-5 w-5" /> Watch Selected Episode
+                    <Play className="mr-2 h-5 w-5" /> Watch on VidSrc
                 </Button>
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
@@ -278,6 +273,7 @@ export default function TVShowDetailPage() {
                           height="100%"
                           src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
                           title="YouTube video player"
+                          frameBorder="0"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                           allowFullScreen
                           className="rounded-md"
@@ -300,7 +296,7 @@ export default function TVShowDetailPage() {
                   <>
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-sm text-muted-foreground">
-                          Playing Season {selectedSeason}, Episode {selectedEpisode} on VidSrc
+                          Playing on VidSrc. Select season/episode in player.
                         </p>
                          <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
@@ -310,7 +306,7 @@ export default function TVShowDetailPage() {
                     <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
                         <iframe
                             src={playerUrl}
-                            title={`Watch ${tvShow.name} - S${selectedSeason}E${selectedEpisode} on VidSrc`}
+                            title={`Watch ${tvShow.name} on VidSrc`}
                             sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             referrerPolicy="no-referrer-when-downgrade"
@@ -326,7 +322,7 @@ export default function TVShowDetailPage() {
               <div className="mt-8">
                 <h3 className="text-xl font-semibold text-foreground mb-4">Seasons</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {tvShow.seasons.filter(s => s.poster_path && s.episode_count > 0).map(season => ( // Also filter seasons with no episodes here for display
+                  {tvShow.seasons.filter(s => s.poster_path && s.episode_count > 0).map(season => (
                     <div key={season.id} className="bg-card rounded-lg overflow-hidden shadow-lg">
                       <div className="aspect-[2/3] relative w-full">
                         <Image
