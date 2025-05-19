@@ -316,6 +316,7 @@ export default function TVShowDetailPage() {
                             src={playerUrl}
                             title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on GoDrivePlayer`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
                             referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
                         ></iframe>

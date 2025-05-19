@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { getMovieDetails, type Movie, type ContentItem, getMovieRecommendations } from '@/lib/tmdb';
+import { getMovieDetails, type Movie, type ContentItem, getMovieRecommendations, type ExternalIds } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb-utils';
 import { Star, CalendarDays, Clapperboard, Play, X, YoutubeIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -226,6 +226,7 @@ export default function MovieDetailPage() {
                             src={playerUrl}
                             title={`Watch ${movie.title} on GoDrivePlayer`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
                             referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
                         ></iframe>
