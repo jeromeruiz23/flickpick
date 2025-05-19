@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { getTVShowDetails, type TVShow } from '@/lib/tmdb';
-import { getImageUrl } from '@/lib/tmdb-utils'; // Updated import
+import { getImageUrl } from '@/lib/tmdb-utils';
 import { Star, CalendarDays, Tv, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,9 @@ export default function TVShowDetailPage() {
         setIsLoading(false);
       }
     }
-    fetchShow();
+    if (params?.id) {
+      fetchShow();
+    }
   }, [params?.id]); 
 
   if (isLoading) {
@@ -139,7 +141,7 @@ export default function TVShowDetailPage() {
                           title={`Watch ${tvShow.name}`}
                           allowFullScreen
                           className="w-full h-full"
-                          sandbox="allow-scripts allow-same-origin allow-presentation"
+                          sandbox="allow-forms allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts"
                       ></iframe>
                   </div>
               )}

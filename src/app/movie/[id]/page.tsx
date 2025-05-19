@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { getMovieDetails, type Movie } from '@/lib/tmdb';
-import { getImageUrl } from '@/lib/tmdb-utils'; // Updated import
+import { getImageUrl } from '@/lib/tmdb-utils';
 import { Star, CalendarDays, Clapperboard, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,9 @@ export default function MovieDetailPage() {
         setIsLoading(false);
       }
     }
-    fetchMovie();
+    if (params?.id) {
+      fetchMovie();
+    }
   }, [params?.id]); 
   
 
@@ -140,7 +142,7 @@ export default function MovieDetailPage() {
                           title={`Watch ${movie.title}`}
                           allowFullScreen
                           className="w-full h-full"
-                          sandbox="allow-scripts allow-same-origin allow-presentation"
+                          sandbox="allow-forms allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts"
                       ></iframe>
                   </div>
               )}
