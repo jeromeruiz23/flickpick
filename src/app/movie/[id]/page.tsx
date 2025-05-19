@@ -95,6 +95,7 @@ export default function MovieDetailPage() {
             src={getImageUrl(movie.backdrop_path, 'original')}
             alt={`Backdrop for ${movie.title}`}
             fill
+            sizes="100vw"
             className="object-cover object-center"
             priority
             data-ai-hint="movie scene"

@@ -132,6 +132,7 @@ export default function HeroSection({ items }: HeroSectionProps) {
               src={getImageUrl(currentItem.backdrop_path, 'original')}
               alt={`Backdrop for ${title}`}
               fill
+              sizes="100vw"
               className="object-cover object-center"
               priority={currentIndex === 0}
               data-ai-hint="movie scene"

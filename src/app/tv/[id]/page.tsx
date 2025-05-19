@@ -61,7 +61,6 @@ export default function TVShowDetailPage() {
           const firstRegularSeason = showData.seasons.find(s => s.season_number > 0 && s.episode_count > 0);
           if (firstRegularSeason) {
             setSelectedSeason(firstRegularSeason.season_number);
-            // setCurrentSeasonDetails and setSelectedEpisode will be set by the other useEffect
           } else {
              const anySeasonWithEpisodes = showData.seasons.find(s => s.episode_count > 0);
              if (anySeasonWithEpisodes) {
@@ -134,6 +133,7 @@ export default function TVShowDetailPage() {
             src={getImageUrl(tvShow.backdrop_path, 'original')}
             alt={`Backdrop for ${tvShow.name}`}
             fill
+            sizes="100vw"
             className="object-cover object-center"
             priority
             data-ai-hint="tv show scene"
@@ -328,6 +328,7 @@ export default function TVShowDetailPage() {
                           src={getImageUrl(season.poster_path, 'w300')}
                           alt={season.name || `Season ${season.season_number}`}
                           fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                           className="object-cover"
                           data-ai-hint="tv season poster"
                         />
