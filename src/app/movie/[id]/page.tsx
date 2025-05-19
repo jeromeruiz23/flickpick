@@ -144,9 +144,8 @@ export default function MovieDetailPage() {
                       <iframe
                           src={playerUrl}
                           title={`Watch ${movie.title}`}
-                          allow="fullscreen"
+                          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                           className="w-full h-full"
-                          sandbox="allow-forms allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts allow-popups-to-escape-sandbox"
                       ></iframe>
                   </div>
               )}
