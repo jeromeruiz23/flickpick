@@ -1,7 +1,8 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ContentItem } from '@/lib/tmdb';
-import { getImageUrl } from '@/lib/tmdb';
+import { getImageUrl } from '@/lib/tmdb-utils'; // Updated import
 import { Card, CardContent } from '@/components/ui/card';
 import { Star } from 'lucide-react';
 

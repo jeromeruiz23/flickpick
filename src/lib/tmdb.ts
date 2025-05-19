@@ -1,7 +1,9 @@
 
+'use server';
+
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/';
+// TMDB_IMAGE_BASE_URL moved to tmdb-utils.ts
 
 // Ensure this is set in your .env file
 if (!TMDB_API_KEY) {
@@ -66,9 +68,6 @@ async function fetchTMDB<T>(endpoint: string, params: Record<string, string> = {
     throw new Error("TMDB_API_KEY is not configured. Please ensure it is set in your .env file and that you have restarted your development server. It appears to be missing, which will prevent TMDB API calls from working.");
   }
   
-  // For v4 access tokens (JWTs), we use the Authorization header.
-  // For v3 API keys, they are passed as an 'api_key' query parameter.
-  // The provided key is a JWT, so we assume v4.
   const headers: HeadersInit = {
     'Authorization': `Bearer ${TMDB_API_KEY}`,
     'Accept': 'application/json',
@@ -98,15 +97,7 @@ async function fetchTMDB<T>(endpoint: string, params: Record<string, string> = {
   }
 }
 
-export const getImageUrl = (path: string | null, size: 'w300' | 'w500' | 'w780' | 'original' = 'w500'): string => {
-  if (!path) {
-    // Updated placeholder to match requested dimensions if possible, but using a generic one.
-    // For a 2:3 aspect ratio like posters, 500x750 is good. For backdrops, it varies.
-    // Using a generic placeholder, specific aspect ratio placeholders can be complex.
-    return 'https://placehold.co/500x750.png'; 
-  }
-  return `${TMDB_IMAGE_BASE_URL}${size}${path}`;
-};
+// getImageUrl moved to tmdb-utils.ts
 
 export async function getPopularMovies(page: number = 1): Promise<TMDBListResponse<Movie>> {
   const data = await fetchTMDB<TMDBListResponse<Movie>>('movie/popular', { page: page.toString() });
@@ -133,13 +124,10 @@ export async function getTopRatedMovies(page: number = 1): Promise<TMDBListRespo
 }
 
 export async function getTrendingAllWeek(page: number = 1): Promise<TMDBListResponse<ContentItem>> {
-  // Results from trending/all/week can be movies or tv shows, media_type is usually included by TMDB
   return fetchTMDB<TMDBListResponse<ContentItem>>('trending/all/week', { page: page.toString() });
 }
 
 export async function searchContent(query: string, page: number = 1): Promise<TMDBListResponse<ContentItem>> {
-  // Results from search/multi can be movies or tv shows, media_type is usually included by TMDB
-  // Filter out people results if any, as ContentItem only supports Movie or TVShow
   const data = await fetchTMDB<TMDBListResponse<any>>('search/multi', { query, page: page.toString(), include_adult: 'false' });
   return {
     ...data,
@@ -153,6 +141,6 @@ export async function getMovieDetails(id: number): Promise<Movie> {
 }
 
 export async function getTVShowDetails(id: number): Promise<TVShow> {
-  const tvShow = await fetchTMDB<TVShow>(`tv/${id}?append_to_response=seasons`); // Ensure seasons are fetched
+  const tvShow = await fetchTMDB<TVShow>(`tv/${id}?append_to_response=seasons`);
   return { ...tvShow, media_type: 'tv' };
 }

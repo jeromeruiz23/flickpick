@@ -4,18 +4,14 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { getTVShowDetails, getImageUrl, type TVShow } from '@/lib/tmdb';
+import { getTVShowDetails, type TVShow } from '@/lib/tmdb';
+import { getImageUrl } from '@/lib/tmdb-utils'; // Updated import
 import { Star, CalendarDays, Tv, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
-// Removed params from props, will use useParams hook
-// interface TVShowDetailPageProps {
-//   params: { id: string };
-// }
-
 export default function TVShowDetailPage() {
-  const params = useParams<{ id: string }>(); // Use useParams hook
+  const params = useParams<{ id: string }>(); 
   const [tvShow, setTvShow] = useState<TVShow | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +19,7 @@ export default function TVShowDetailPage() {
 
   useEffect(() => {
     async function fetchShow() {
-      if (!params || !params.id) return; // Ensure params.id is available
+      if (!params || !params.id) return; 
       try {
         setIsLoading(true);
         const showData = await getTVShowDetails(Number(params.id));
@@ -38,7 +34,7 @@ export default function TVShowDetailPage() {
       }
     }
     fetchShow();
-  }, [params?.id]); // params itself can be a dependency, or params.id
+  }, [params?.id]); 
 
   if (isLoading) {
     return (
@@ -181,8 +177,3 @@ export default function TVShowDetailPage() {
     </div>
   );
 }
-
-// Removed generateMetadata function as it cannot be exported from a 'use client' component.
-// This means dynamic metadata (title, description) for this page will not be server-generated.
-// For SEO, consider refactoring to have a Server Component parent that handles metadata
-// and passes data to this client component.

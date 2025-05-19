@@ -1,7 +1,8 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ContentItem } from '@/lib/tmdb';
-import { getImageUrl } from '@/lib/tmdb';
+import { getImageUrl } from '@/lib/tmdb-utils'; // Updated import
 import { Button } from '@/components/ui/button';
 import { PlayCircle } from 'lucide-react';
 
