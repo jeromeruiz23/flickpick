@@ -26,7 +26,7 @@ export default function TVShowDetailPage() {
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [activePlayerSource, setActivePlayerSource] = useState<PlayerSource>(null);
+  const [activePlayerSource, setActivePlayerSource] = useState<PlayerSource>('vidsrc'); // Default to vidsrc
   const [playerUrl, setPlayerUrl] = useState<string | null>(null);
 
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export default function TVShowDetailPage() {
 
   useEffect(() => {
     async function fetchShow() {
-      if (!tvShowId) {
+      if (!tvShowId || isNaN(tvShowId)) {
         setIsLoading(false);
         setErrorOccurred(true);
         return;
@@ -109,7 +109,7 @@ export default function TVShowDetailPage() {
   }, [selectedSeason, tvShow]);
 
   useEffect(() => {
-    if (activePlayerSource && tvShow && selectedSeason !== null && selectedEpisode !== null) {
+    if (activePlayerSource && tvShow && tvShow.id > 0 && selectedSeason !== null && selectedSeason > 0 && selectedEpisode !== null && selectedEpisode > 0) {
       let url = '';
       if (activePlayerSource === 'vidsrc') {
         url = `https://vidsrc.to/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}`;
@@ -124,7 +124,7 @@ export default function TVShowDetailPage() {
 
 
   const handleWatchClick = (source: PlayerSource) => {
-     if (!tvShow || tvShow.id === null || selectedSeason === null || selectedEpisode === null) return;
+     if (!canWatch || !tvShow || !tvShow.id || selectedSeason === null || selectedEpisode === null) return;
 
     let url = '';
     if (source === 'vidsrc') {
@@ -137,7 +137,7 @@ export default function TVShowDetailPage() {
       setActivePlayerSource(null);
     } else {
       setActivePlayerSource(source);
-      setPlayerUrl(url); // Set explicitly here too for immediate effect
+      setPlayerUrl(url); 
     }
   };
 
@@ -163,7 +163,7 @@ export default function TVShowDetailPage() {
     );
   }
   
-  const canWatch = tvShow?.id !== null && selectedSeason !== null && selectedEpisode !== null;
+  const canWatch = tvShow?.id !== null && tvShow.id > 0 && selectedSeason !== null && selectedSeason > 0 && selectedEpisode !== null && selectedEpisode > 0;
   const availableSeasons = tvShow.seasons?.filter(s => s.episode_count > 0) || [];
 
   return (
@@ -357,7 +357,7 @@ export default function TVShowDetailPage() {
                             src={playerUrl}
                             title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on ${activePlayerSource === 'vidsrc' ? 'VidSrc.to' : '2Embed'}`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
+                            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation allow-popups-to-escape-sandbox"
                             referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
                         ></iframe>

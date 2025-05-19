@@ -24,7 +24,7 @@ export default function MovieDetailPage() {
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [activePlayerSource, setActivePlayerSource] = useState<PlayerSource>(null);
+  const [activePlayerSource, setActivePlayerSource] = useState<PlayerSource>('vidsrc'); // Default to vidsrc
   const [playerUrl, setPlayerUrl] = useState<string | null>(null);
 
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export default function MovieDetailPage() {
 
   useEffect(() => {
     async function fetchMovie() {
-      if (!movieId) {
+      if (!movieId || isNaN(movieId)) {
         setIsLoading(false);
         setErrorOccurred(true);
         return;
@@ -74,9 +74,27 @@ export default function MovieDetailPage() {
     }
     fetchMovie();
   }, [movieId]);
+  
+  const canWatch = !!movie?.id && movie.id > 0;
+
+  useEffect(() => {
+    // Effect to set player URL when movie and activePlayerSource are available
+    if (movie && movie.id && activePlayerSource) {
+      let url = '';
+      if (activePlayerSource === 'vidsrc') {
+        url = `https://vidsrc.to/embed/movie/${movie.id}`;
+      } else if (activePlayerSource === '2embed') {
+         url = `https://www.2embed.cc/embed/tmdb/movie?id=${movie.id}`;
+      }
+      setPlayerUrl(url);
+    } else {
+      setPlayerUrl(null); // Clear player URL if movie or source is not set
+    }
+  }, [movie, activePlayerSource]);
+
 
   const handleWatchClick = (source: PlayerSource) => {
-    if (!movie || !movie.id) return;
+    if (!canWatch || !movie || !movie.id) return;
 
     let url = '';
     if (source === 'vidsrc') {
@@ -85,8 +103,8 @@ export default function MovieDetailPage() {
       url = `https://www.2embed.cc/embed/tmdb/movie?id=${movie.id}`;
     }
     
-    if (activePlayerSource === source && playerUrl === url) { // If clicking the same active button
-      setActivePlayerSource(null); // Hide player
+    if (activePlayerSource === source && playerUrl === url) { 
+      setActivePlayerSource(null); 
       setPlayerUrl(null);
     } else {
       setPlayerUrl(url);
@@ -116,8 +134,6 @@ export default function MovieDetailPage() {
       </div>
     );
   }
-  
-  const canWatch = !!movie?.id;
 
   return (
     <div className="min-h-screen">
@@ -253,7 +269,7 @@ export default function MovieDetailPage() {
                             src={playerUrl}
                             title={`Watch ${movie.title} on ${activePlayerSource === 'vidsrc' ? 'VidSrc.to' : '2Embed'}`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
+                            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation allow-popups-to-escape-sandbox"
                             referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
                         ></iframe>
