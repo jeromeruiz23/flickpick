@@ -112,7 +112,7 @@ export default function HeroSection({ items }: HeroSectionProps) {
     <section className="relative h-[60vh] md:h-[70vh] lg:h-[80vh] w-full mb-12 rounded-lg overflow-hidden shadow-xl group">
       <div className={cn(
           "absolute inset-0 transition-opacity ease-in-out",
-          "duration-[500ms]", // Direct value instead of template literal
+          "duration-[500ms]", 
           isFading ? "opacity-0" : "opacity-100"
         )}>
         {currentTrailerKey ? (
@@ -168,7 +168,7 @@ export default function HeroSection({ items }: HeroSectionProps) {
         <div
           className={cn(
             "max-w-2xl transition-opacity ease-in-out",
-            "duration-[500ms]", // Direct value instead of template literal
+            "duration-[500ms]", 
             isFading ? "opacity-0" : "opacity-100"
           )}
         >
