@@ -19,7 +19,7 @@ export default function MovieDetailPage() {
   const [movie, setMovie] = useState<Movie | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [playerVisible, setPlayerVisible] = useState(false);
+  const [playerVisible, setPlayerVisible] = useState(true); // Player is visible by default
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
 
@@ -161,7 +161,7 @@ export default function MovieDetailPage() {
               <h3 className="text-lg font-semibold text-foreground mb-2">Available Actions:</h3>
               <div className="flex flex-wrap gap-2 items-center">
                 <Button onClick={handleTogglePlayer} variant="primary" size="lg">
-                    <Play className="mr-2 h-5 w-5" /> Watch on VidSrc
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible ? "Hide Player" : "Watch on VidSrc"}
                 </Button>
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>

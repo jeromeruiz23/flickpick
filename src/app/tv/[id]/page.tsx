@@ -21,7 +21,7 @@ export default function TVShowDetailPage() {
   const [tvShow, setTvShow] = useState<TVShow | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [playerVisible, setPlayerVisible] = useState(false);
+  const [playerVisible, setPlayerVisible] = useState(true); // Player is visible by default
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
 
@@ -252,7 +252,7 @@ export default function TVShowDetailPage() {
                   size="lg"
                   disabled={!canWatch}
                 >
-                    <Play className="mr-2 h-5 w-5" /> Watch on VidSrc
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible ? "Hide Player" : "Watch on VidSrc"}
                 </Button>
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
@@ -328,7 +328,7 @@ export default function TVShowDetailPage() {
                           src={getImageUrl(season.poster_path, 'w300')}
                           alt={season.name || `Season ${season.season_number}`}
                           fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          sizes="(max-width: 639px) 100vw, (max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
                           className="object-cover"
                           data-ai-hint="tv season poster"
                         />
