@@ -60,7 +60,7 @@ export default function MovieDetailPage() {
     );
   }
 
-  const playerUrl = `https://www.2embed.cc/embed/tmdb/movie?id=${movie.id}`;
+  const playerUrl = `https://hnembed.xyz/embed/movie?id=${movie.id}`;
 
   return (
     <div className="min-h-screen">
@@ -137,7 +137,7 @@ export default function MovieDetailPage() {
 
             <div className="mt-8">
               <Button onClick={() => setShowPlayer(!showPlayer)} variant="primary" size="lg" className="w-full md:w-auto">
-                  <Play className="mr-2 h-5 w-5" /> {showPlayer ? 'Hide Player' : 'Watch Now on 2Embed'}
+                  <Play className="mr-2 h-5 w-5" /> {showPlayer ? 'Hide Player' : 'Watch Now on HNEmbed'}
               </Button>
               {showPlayer && (
                   <div className="mt-6 aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
