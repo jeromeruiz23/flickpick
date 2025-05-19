@@ -178,17 +178,7 @@ export default function TVShowDetailPage({ params }: TVShowDetailPageProps) {
   );
 }
 
-export async function generateMetadata({ params }: TVShowDetailPageProps) {
-  try {
-    const tvShow = await getTVShowDetails(Number(params.id));
-    return {
-      title: `${tvShow.name} - FlickPick`,
-      description: tvShow.overview,
-    };
-  } catch (error) {
-    return {
-      title: 'TV Show Not Found - FlickPick',
-      description: 'Details for this TV show could not be loaded.',
-    };
-  }
-}
+// Removed generateMetadata function as it cannot be exported from a 'use client' component.
+// This means dynamic metadata (title, description) for this page will not be server-generated.
+// For SEO, consider refactoring to have a Server Component parent that handles metadata
+// and passes data to this client component.

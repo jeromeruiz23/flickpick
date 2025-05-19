@@ -12,22 +12,6 @@ interface MovieDetailPageProps {
   params: { id: string };
 }
 
-// generateMetadata can remain if we fetch data for it separately or if Next.js handles it
-// For client components, metadata should typically be handled by a parent server component or a dedicated metadata export.
-// However, Next.js allows exporting generateMetadata from client components if they can be rendered on the server first.
-// Let's keep generateMetadata and fetch movie details for it. The main component will re-fetch or use passed data.
-
-// To ensure metadata generation works correctly and initial data is server-rendered,
-// we'll fetch movie details once for the server part (metadata and initial render)
-// and then the client component will use this data.
-// A simpler approach for this specific case is to fetch inside useEffect if the page is fully client,
-// but for SEO and initial load, server-fetched data is better.
-
-// Let's adjust the fetching pattern for a client component.
-// The initial data can be fetched and passed, or fetched in useEffect.
-// For now, we'll assume the initial `movie` prop approach is not used and fetch within the component.
-// The `generateMetadata` function will still work as it's hoisted and run on the server.
-
 export default function MovieDetailPage({ params }: MovieDetailPageProps) {
   const [movie, setMovie] = useState<Movie | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
@@ -52,11 +36,6 @@ export default function MovieDetailPage({ params }: MovieDetailPageProps) {
     fetchMovie();
   }, [params.id]);
   
-  // It's better practice for generateMetadata to be a separate export if the page is client.
-  // For simplicity and to match original structure, we keep it here.
-  // This function is executed at build time or on demand on the server.
-  // const generateMetadata = async ({ params }: MovieDetailPageProps) => { ... } is not needed inside client component.
-  // The file level export is sufficient.
 
   if (isLoading) {
     return (
@@ -173,18 +152,7 @@ export default function MovieDetailPage({ params }: MovieDetailPageProps) {
   );
 }
 
-export async function generateMetadata({ params }: MovieDetailPageProps) {
-  try {
-    // Fetch minimal data needed for metadata
-    const movie = await getMovieDetails(Number(params.id));
-    return {
-      title: `${movie.title} - FlickPick`,
-      description: movie.overview,
-    };
-  } catch (error) {
-    return {
-      title: 'Movie Not Found - FlickPick',
-      description: 'Details for this movie could not be loaded.',
-    };
-  }
-}
+// Removed generateMetadata function as it cannot be exported from a 'use client' component.
+// This means dynamic metadata (title, description) for this page will not be server-generated.
+// For SEO, consider refactoring to have a Server Component parent that handles metadata
+// and passes data to this client component.
