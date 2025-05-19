@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { getTVShowDetails, type TVShow } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb-utils';
-import { Star, CalendarDays, Tv, Play } from 'lucide-react';
+import { Star, CalendarDays, Tv, Play, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -16,13 +16,14 @@ export default function TVShowDetailPage() {
   const [tvShow, setTvShow] = useState<TVShow | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [showPlayer, setShowPlayer] = useState(false);
+  const [activePlayerUrl, setActivePlayerUrl] = useState<string | null>(null);
+  const [activeSourceName, setActiveSourceName] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchShow() {
       if (!params?.id) {
         setIsLoading(false);
-        setErrorOccurred(true); // No ID, so error
+        setErrorOccurred(true);
         return;
       }
       try {
@@ -40,6 +41,18 @@ export default function TVShowDetailPage() {
     }
     fetchShow();
   }, [params]);
+
+  const handlePlay = (sourceName: string, baseUrl: string) => {
+    if (tvShow) {
+      setActivePlayerUrl(`${baseUrl}/tv/${tvShow.id}`);
+      setActiveSourceName(sourceName);
+    }
+  };
+
+  const handleClosePlayer = () => {
+    setActivePlayerUrl(null);
+    setActiveSourceName(null);
+  };
 
   if (isLoading) {
     return (
@@ -59,11 +72,8 @@ export default function TVShowDetailPage() {
     );
   }
 
-  const playerUrl = `https://vidsrc.to/embed/tv/${tvShow.id}`;
-
   return (
     <div className="min-h-screen">
-      {/* Backdrop */}
       {tvShow.backdrop_path && (
         <div className="relative h-[40vh] md:h-[50vh] w-full -mx-4 -mt-8 md:-mx-0 md:-mt-0 md:rounded-lg overflow-hidden">
           <Image
@@ -78,10 +88,8 @@ export default function TVShowDetailPage() {
         </div>
       )}
 
-      {/* Main Content */}
       <div className="container mx-auto px-4 py-8 relative -mt-24 md:-mt-32">
         <div className="md:flex md:space-x-8 items-start">
-          {/* Poster */}
           <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0 mb-6 md:mb-0">
             <div className="aspect-[2/3] relative rounded-lg overflow-hidden shadow-2xl">
               <Image
@@ -95,7 +103,6 @@ export default function TVShowDetailPage() {
             </div>
           </div>
 
-          {/* Details */}
           <div className="md:w-2/3 lg:w-3/4">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2">{tvShow.name}</h1>
             {tvShow.tagline && <p className="text-lg text-muted-foreground italic mb-4">{tvShow.tagline}</p>}
@@ -134,28 +141,47 @@ export default function TVShowDetailPage() {
               <p className="text-foreground/80 leading-relaxed whitespace-pre-wrap">{tvShow.overview}</p>
             </div>
 
-            <div className="mt-8">
-              <Button onClick={() => setShowPlayer(!showPlayer)} variant="primary" size="lg" className="w-full md:w-auto">
-                  <Play className="mr-2 h-5 w-5" /> {showPlayer ? 'Hide Player' : 'Watch Now on VidSrc'}
-              </Button>
-              {showPlayer && (
-                  <div className="mt-6 aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
-                      <iframe
-                          src={playerUrl}
-                          title={`Watch ${tvShow.name}`}
-                          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                          className="w-full h-full"
-                      ></iframe>
+            <div className="mt-8 space-y-4">
+              <h3 className="text-lg font-semibold text-foreground">Watch Now:</h3>
+              <div className="flex flex-wrap gap-3">
+                <Button onClick={() => handlePlay('VidSrc.to', 'https://vidsrc.to/embed')} variant="primary" size="sm">
+                    <Play className="mr-2 h-4 w-4" /> Watch on VidSrc.to
+                </Button>
+                <Button onClick={() => handlePlay('VidSrc.xyz', 'https://vidsrc.xyz/embed')} variant="secondary" size="sm">
+                    <Play className="mr-2 h-4 w-4" /> Watch on VidSrc.xyz
+                </Button>
+                <Button onClick={() => handlePlay('VidSrc.me', 'https://vidsrc.me/embed')} variant="secondary" size="sm">
+                    <Play className="mr-2 h-4 w-4" /> Watch on VidSrc.me
+                </Button>
+              </div>
+
+              {activePlayerUrl && (
+                  <div className="mt-6">
+                    <div className="flex justify-between items-center mb-2">
+                        <p className="text-sm text-muted-foreground">Playing on: {activeSourceName}</p>
+                         <Button onClick={handleClosePlayer} variant="ghost" size="icon" className="h-8 w-8">
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Close Player</span>
+                        </Button>
+                    </div>
+                    <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
+                        <iframe
+                            key={activePlayerUrl}
+                            src={activePlayerUrl}
+                            title={`Watch ${tvShow.name}${activeSourceName ? ` on ${activeSourceName}` : ''}`}
+                            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                            className="w-full h-full"
+                        ></iframe>
+                    </div>
                   </div>
               )}
             </div>
 
-             {/* Seasons Information */}
             {tvShow.seasons && tvShow.seasons.length > 0 && (
               <div className="mt-8">
                 <h3 className="text-xl font-semibold text-foreground mb-4">Seasons</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {tvShow.seasons.filter(s => s.poster_path && s.season_number > 0).map(season => ( // Filter out "Specials" or seasons without posters
+                  {tvShow.seasons.filter(s => s.poster_path && s.season_number > 0).map(season => (
                     <div key={season.id} className="bg-card rounded-lg overflow-hidden shadow-lg">
                       <div className="aspect-[2/3] relative w-full">
                         <Image
