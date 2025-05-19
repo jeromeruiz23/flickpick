@@ -36,7 +36,7 @@ export default function TVShowDetailPage() {
     if (params?.id) {
       fetchShow();
     }
-  }, [params?.id]); 
+  }, [params]); 
 
   if (isLoading) {
     return (
@@ -141,7 +141,7 @@ export default function TVShowDetailPage() {
                           title={`Watch ${tvShow.name}`}
                           allowFullScreen
                           className="w-full h-full"
-                          sandbox="allow-forms allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts"
+                          sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-top-navigation"
                       ></iframe>
                   </div>
               )}

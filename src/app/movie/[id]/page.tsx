@@ -36,7 +36,7 @@ export default function MovieDetailPage() {
     if (params?.id) {
       fetchMovie();
     }
-  }, [params?.id]); 
+  }, [params]); 
   
 
   if (isLoading) {
@@ -142,7 +142,7 @@ export default function MovieDetailPage() {
                           title={`Watch ${movie.title}`}
                           allowFullScreen
                           className="w-full h-full"
-                          sandbox="allow-forms allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts"
+                          sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-top-navigation"
                       ></iframe>
                   </div>
               )}
