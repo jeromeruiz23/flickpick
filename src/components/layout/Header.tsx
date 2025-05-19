@@ -23,6 +23,15 @@ const genres = [
   { name: "Documentary", query: "Documentary" },
 ];
 
+const categories = [
+  { name: "Japanese", query: "Japanese" },
+  { name: "Korean", query: "Korean" },
+  { name: "Chinese", query: "Chinese" },
+  { name: "Thai", query: "Thai" },
+  { name: "Filipino", query: "Filipino" },
+  { name: "Indian", query: "Indian" },
+];
+
 function SearchBarFallback() {
   return (
     <form className="flex items-center space-x-2 relative">
@@ -71,6 +80,23 @@ export default function Header() {
                   <DropdownMenuItem key={genre.name} asChild>
                     <Link href={`/search?q=${encodeURIComponent(genre.query)}`} className="hover:bg-accent hover:text-accent-foreground">
                       {genre.name}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="link" className="text-foreground hover:text-primary transition-colors px-2 lg:px-3">
+                  Categories <ChevronDown className="ml-1 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="bg-popover text-popover-foreground">
+                {categories.map((category) => (
+                  <DropdownMenuItem key={category.name} asChild>
+                    <Link href={`/search?q=${encodeURIComponent(category.query)}`} className="hover:bg-accent hover:text-accent-foreground">
+                      {category.name}
                     </Link>
                   </DropdownMenuItem>
                 ))}
