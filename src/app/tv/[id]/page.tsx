@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { getTVShowDetails, type TVShow } from '@/lib/tmdb';
+import { getTVShowDetails, type TVShow, type Season } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb-utils';
 import { Star, CalendarDays, Tv, Play, X, YoutubeIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import CommentSection from '@/components/CommentSection';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 export default function TVShowDetailPage() {
   const params = useParams<{ id: string }>();
@@ -22,6 +24,10 @@ export default function TVShowDetailPage() {
   const [playerVisible, setPlayerVisible] = useState(false);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
+
+  const [selectedSeason, setSelectedSeason] = useState<number | null>(null);
+  const [selectedEpisode, setSelectedEpisode] = useState<number | null>(null);
+  const [currentSeasonDetails, setCurrentSeasonDetails] = useState<Season | null>(null);
 
   useEffect(() => {
     async function fetchShow() {
@@ -50,6 +56,16 @@ export default function TVShowDetailPage() {
             }
           }
         }
+
+        // Set default season and episode
+        if (showData.seasons && showData.seasons.length > 0) {
+          const firstRegularSeason = showData.seasons.find(s => s.season_number > 0 && s.episode_count > 0);
+          if (firstRegularSeason) {
+            setSelectedSeason(firstRegularSeason.season_number);
+            setCurrentSeasonDetails(firstRegularSeason);
+            setSelectedEpisode(1); // Default to first episode
+          }
+        }
         setErrorOccurred(false);
       } catch (error) {
         console.error(`Failed to load TV show details for ID ${params.id}:`, error);
@@ -62,8 +78,27 @@ export default function TVShowDetailPage() {
     fetchShow();
   }, [params]);
 
+  useEffect(() => {
+    if (tvShow && selectedSeason !== null) {
+      const seasonDetail = tvShow.seasons?.find(s => s.season_number === selectedSeason);
+      setCurrentSeasonDetails(seasonDetail || null);
+      // Reset episode to 1 when season changes, if the new season has episodes
+      if (seasonDetail && seasonDetail.episode_count > 0) {
+        setSelectedEpisode(1);
+      } else {
+        setSelectedEpisode(null);
+      }
+    } else {
+      setCurrentSeasonDetails(null);
+      setSelectedEpisode(null);
+    }
+  }, [selectedSeason, tvShow]);
+
+
   const handleTogglePlayer = () => {
-    setPlayerVisible(!playerVisible);
+    if (selectedSeason !== null && selectedEpisode !== null) {
+      setPlayerVisible(!playerVisible);
+    }
   };
 
   if (isLoading) {
@@ -84,7 +119,11 @@ export default function TVShowDetailPage() {
     );
   }
 
-  const playerUrl = `https://vidsrc.to/embed/tv/${tvShow.id}`;
+  const playerUrl = (selectedSeason !== null && selectedEpisode !== null && tvShow)
+    ? `https://vidsrc.to/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}`
+    : '';
+
+  const availableSeasons = tvShow.seasons?.filter(s => s.season_number > 0 && s.episode_count > 0) || [];
 
   return (
     <div className="min-h-screen">
@@ -156,10 +195,63 @@ export default function TVShowDetailPage() {
             </div>
 
             <div className="mt-8 space-y-4">
-               <h3 className="text-lg font-semibold text-foreground mb-2">Available Actions:</h3>
-               <div className="flex flex-wrap gap-2 items-center">
-                <Button onClick={handleTogglePlayer} variant="primary" size="lg">
-                    <Play className="mr-2 h-5 w-5" /> Watch on VidSrc
+              <h3 className="text-lg font-semibold text-foreground mb-2">Watch Options:</h3>
+              
+              {availableSeasons.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 items-end">
+                  <div>
+                    <Label htmlFor="season-select" className="text-sm font-medium text-muted-foreground">Season</Label>
+                    <Select
+                      value={selectedSeason?.toString()}
+                      onValueChange={(value) => setSelectedSeason(Number(value))}
+                    >
+                      <SelectTrigger id="season-select" className="w-full mt-1">
+                        <SelectValue placeholder="Select season" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableSeasons.map(season => (
+                          <SelectItem key={season.id} value={season.season_number.toString()}>
+                            {season.name || `Season ${season.season_number}`} ({season.episode_count} episodes)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {currentSeasonDetails && selectedSeason !== null && (
+                    <div>
+                      <Label htmlFor="episode-select" className="text-sm font-medium text-muted-foreground">Episode</Label>
+                      <Select
+                        value={selectedEpisode?.toString()}
+                        onValueChange={(value) => setSelectedEpisode(Number(value))}
+                        disabled={!currentSeasonDetails || currentSeasonDetails.episode_count === 0}
+                      >
+                        <SelectTrigger id="episode-select" className="w-full mt-1">
+                          <SelectValue placeholder="Select episode" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: currentSeasonDetails.episode_count }, (_, i) => i + 1).map(epNum => (
+                            <SelectItem key={epNum} value={epNum.toString()}>
+                              Episode {epNum}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">No seasons with episodes available for selection.</p>
+              )}
+
+              <div className="flex flex-wrap gap-2 items-center">
+                <Button 
+                  onClick={handleTogglePlayer} 
+                  variant="primary" 
+                  size="lg"
+                  disabled={!selectedSeason || !selectedEpisode}
+                >
+                    <Play className="mr-2 h-5 w-5" /> Watch Selected Episode
                 </Button>
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
@@ -178,7 +270,6 @@ export default function TVShowDetailPage() {
                           height="100%"
                           src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
                           title="YouTube video player"
-                          frameBorder="0"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                           allowFullScreen
                           className="rounded-md"
@@ -192,15 +283,17 @@ export default function TVShowDetailPage() {
               <div
                 className={cn(
                   "transition-all duration-500 ease-in-out overflow-hidden",
-                  playerVisible
+                  playerVisible && playerUrl
                     ? "opacity-100 max-h-[70vh] mt-6"
                     : "opacity-0 max-h-0 mt-0"
                 )}
               >
-                {playerVisible && (
+                {playerVisible && playerUrl && (
                   <>
                     <div className="flex justify-between items-center mb-2">
-                        <p className="text-sm text-muted-foreground">Playing on: VidSrc</p>
+                        <p className="text-sm text-muted-foreground">
+                          Playing Season {selectedSeason}, Episode {selectedEpisode} on VidSrc
+                        </p>
                          <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
                             <span className="sr-only">Close Player</span>
@@ -209,8 +302,8 @@ export default function TVShowDetailPage() {
                     <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
                         <iframe
                             src={playerUrl}
-                            title={`Watch ${tvShow.name} on VidSrc`}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                            title={`Watch ${tvShow.name} - S${selectedSeason}E${selectedEpisode} on VidSrc`}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             sandbox="allow-forms allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts allow-popups-to-escape-sandbox"
                             referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
@@ -248,9 +341,9 @@ export default function TVShowDetailPage() {
             )}
           </div>
         </div>
-        {/* Comment Section */}
         <CommentSection />
       </div>
     </div>
   );
 }
+

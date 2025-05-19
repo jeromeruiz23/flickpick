@@ -43,7 +43,17 @@ export interface Movie {
   media_type?: 'movie';
   tagline?: string;
   runtime?: number;
-  videos?: MediaVideos; // Added for trailers
+  videos?: MediaVideos;
+}
+
+export interface Season {
+  id: number;
+  name: string;
+  poster_path: string | null;
+  season_number: number;
+  episode_count: number;
+  air_date: string | null;
+  overview?: string; // Added for more detail if needed
 }
 
 export interface TVShow {
@@ -61,15 +71,8 @@ export interface TVShow {
   media_type?: 'tv';
   tagline?: string;
   number_of_seasons?: number;
-  seasons?: {
-    id: number;
-    name: string;
-    poster_path: string | null;
-    season_number: number;
-    episode_count: number;
-    air_date: string | null;
-  }[];
-  videos?: MediaVideos; // Added for trailers
+  seasons?: Season[];
+  videos?: MediaVideos;
 }
 
 export type ContentItem = Movie | TVShow;
@@ -157,6 +160,7 @@ export async function getMovieDetails(id: number): Promise<Movie> {
 }
 
 export async function getTVShowDetails(id: number): Promise<TVShow> {
-  const tvShow = await fetchTMDB<TVShow>(`tv/${id}?append_to_response=videos,seasons`);
+  // Ensure 'seasons' is part of append_to_response if not already standard for tv details
+  const tvShow = await fetchTMDB<TVShow>(`tv/${id}?append_to_response=videos`);
   return { ...tvShow, media_type: 'tv' };
 }
