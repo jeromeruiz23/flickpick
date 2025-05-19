@@ -6,8 +6,9 @@ import Link from 'next/link';
 import type { ContentItem } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb-utils';
 import { Button } from '@/components/ui/button';
-import { PlayCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { PlayCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { cn } from '@/lib/utils';
 
 interface HeroSectionProps {
   items: ContentItem[];
@@ -16,20 +17,54 @@ interface HeroSectionProps {
 export default function HeroSection({ items }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFading, setIsFading] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const autoPlayInterval = 7000; // ms
+  const fadeDuration = 500; // ms
+
+  const advanceSlide = useCallback((direction: 'next' | 'prev') => {
+    if (!items || items.length <= 1) return;
+    setIsFading(true);
+    setTimeout(() => {
+      setCurrentIndex((prevIndex) => {
+        if (direction === 'next') {
+          return (prevIndex + 1) % items.length;
+        } else {
+          return (prevIndex - 1 + items.length) % items.length;
+        }
+      });
+      setIsFading(false);
+    }, fadeDuration);
+  }, [items]);
+
+  const resetTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    if (items && items.length > 1) {
+      timerRef.current = setInterval(() => {
+        advanceSlide('next');
+      }, autoPlayInterval);
+    }
+  }, [items, advanceSlide, autoPlayInterval]);
 
   useEffect(() => {
-    if (!items || items.length <= 1) return;
+    resetTimer();
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [items, currentIndex, resetTimer]); // Reset timer when items or currentIndex changes
 
-    const timer = setInterval(() => {
-      setIsFading(true);
-      setTimeout(() => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % items.length);
-        setIsFading(false);
-      }, 500); // Corresponds to the fade-out duration
-    }, 7000); // Change item every 7 seconds
+  const handlePrev = () => {
+    advanceSlide('prev');
+    resetTimer(); // Reset timer on manual interaction
+  };
 
-    return () => clearInterval(timer);
-  }, [items]);
+  const handleNext = () => {
+    advanceSlide('next');
+    resetTimer(); // Reset timer on manual interaction
+  };
 
   if (!items || items.length === 0) {
     return (
@@ -45,22 +80,50 @@ export default function HeroSection({ items }: HeroSectionProps) {
   const detailUrl = `/${itemType}/${currentItem.id}`;
 
   return (
-    <section className="relative h-[60vh] md:h-[70vh] lg:h-[80vh] w-full mb-12 rounded-lg overflow-hidden shadow-xl">
+    <section className="relative h-[60vh] md:h-[70vh] lg:h-[80vh] w-full mb-12 rounded-lg overflow-hidden shadow-xl group">
       {currentItem.backdrop_path && (
         <Image
-          key={currentItem.id} // Ensures Image component re-renders correctly on item change
+          key={currentItem.id} 
           src={getImageUrl(currentItem.backdrop_path, 'original')}
           alt={`Backdrop for ${title}`}
           fill
           className="object-cover object-center transition-opacity duration-1000 ease-in-out"
-          priority={currentIndex === 0} // Prioritize loading the first image
+          priority={currentIndex === 0} 
           data-ai-hint="movie scene"
         />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
+      
+      {items.length > 1 && (
+        <>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handlePrev}
+            className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10 md:h-12 md:w-12 rounded-full bg-background/30 hover:bg-background/60 text-foreground opacity-70 group-hover:opacity-100 transition-all"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleNext}
+            className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10 md:h-12 md:w-12 rounded-full bg-background/30 hover:bg-background/60 text-foreground opacity-70 group-hover:opacity-100 transition-all"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
+          </Button>
+        </>
+      )}
+
       <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10 lg:p-16">
         <div
-          className={`max-w-2xl transition-opacity duration-500 ease-in-out ${isFading ? 'opacity-0' : 'opacity-100'}`}
+          className={cn(
+            "max-w-2xl transition-opacity ease-in-out",
+            isFading ? 'opacity-0 duration-300' : `opacity-100 duration-[${fadeDuration}ms]`
+          )}
+          style={{ transitionDuration: `${fadeDuration}ms` }}
         >
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 drop-shadow-lg">
             {title}
