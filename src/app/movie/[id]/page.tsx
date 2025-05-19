@@ -73,10 +73,10 @@ export default function MovieDetailPage() {
     fetchMovie();
   }, [movieId]);
   
-  const canWatch = !!movie && !!movie.id && movie.id > 0 && !!movie.external_ids?.imdb_id;
+  const canWatch = !!movie && !!movie.id && movie.id > 0;
 
   useEffect(() => {
-    if (canWatch) {
+    if (canWatch && movie) {
       setPlayerUrl(`https://vidsrc.icu/embed/movie/${movie.id}`);
     } else {
       setPlayerUrl(null);
@@ -188,7 +188,7 @@ export default function MovieDetailPage() {
                     <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.icu"}
                 </Button>
                 
-                {!canWatch && <p className="text-sm text-muted-foreground">Movie ID not available for this source.</p>}
+                {!canWatch && !movie?.id && <p className="text-sm text-muted-foreground">Movie ID not available for this source.</p>}
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
                     <DialogTrigger asChild>
@@ -241,9 +241,10 @@ export default function MovieDetailPage() {
                             key={playerUrl} 
                             src={playerUrl}
                             title={`Watch ${movie.title} on VidSrc.icu`}
+                            className="w-full h-full"
+                            allowFullScreen
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             referrerPolicy="no-referrer-when-downgrade"
-                            className="w-full h-full"
                         ></iframe>
                     </div>
                   </>
