@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { getMovieDetails, type Movie } from '@/lib/tmdb';
+import { getMovieDetails, type Movie, type ContentItem, getMovieRecommendations } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb-utils';
 import { Star, CalendarDays, Clapperboard, Play, X, YoutubeIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -13,26 +13,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import CommentSection from '@/components/CommentSection';
+import ContentSlider from '@/components/ContentSlider';
 
 export default function MovieDetailPage() {
   const params = useParams<{ id: string }>();
+  const movieId = Number(params.id);
   const [movie, setMovie] = useState<Movie | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [playerVisible, setPlayerVisible] = useState(true); 
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
+  const [recommendations, setRecommendations] = useState<ContentItem[]>([]);
 
   useEffect(() => {
     async function fetchMovie() {
-      if (!params?.id) {
+      if (!movieId) {
         setIsLoading(false);
         setErrorOccurred(true);
         return;
       }
       try {
         setIsLoading(true);
-        const movieData = await getMovieDetails(Number(params.id));
+        const movieData = await getMovieDetails(movieId);
         setMovie(movieData);
 
         if (movieData.videos && movieData.videos.results.length > 0) {
@@ -51,16 +54,22 @@ export default function MovieDetailPage() {
           }
         }
         setErrorOccurred(false);
+
+        // Fetch recommendations
+        const recommendationsData = await getMovieRecommendations(movieId);
+        setRecommendations(recommendationsData.results);
+
       } catch (error) {
-        console.error(`Failed to load movie details for ID ${params.id}:`, error);
+        console.error(`Failed to load movie details for ID ${movieId}:`, error);
         setErrorOccurred(true);
         setMovie(null);
+        setRecommendations([]);
       } finally {
         setIsLoading(false);
       }
     }
     fetchMovie();
-  }, [params]);
+  }, [movieId]);
 
   const handleTogglePlayer = () => {
     if (movie?.external_ids?.imdb_id) {
@@ -227,6 +236,13 @@ export default function MovieDetailPage() {
             </div>
           </div>
         </div>
+        
+        {recommendations.length > 0 && (
+          <div className="mt-12">
+            <ContentSlider items={recommendations} title="You Might Also Like" />
+          </div>
+        )}
+        
         <CommentSection />
       </div>
     </div>

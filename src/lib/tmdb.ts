@@ -82,7 +82,7 @@ export interface TVShow {
   number_of_seasons?: number;
   seasons?: Season[];
   videos?: MediaVideos;
-  external_ids?: ExternalIds; // Though not used by GoDrivePlayer for TV, keep for consistency
+  external_ids?: ExternalIds;
 }
 
 export type ContentItem = Movie | TVShow;
@@ -176,4 +176,20 @@ export async function getMovieDetails(id: number): Promise<Movie> {
 export async function getTVShowDetails(id: number): Promise<TVShow> {
   const tvShow = await fetchTMDB<TVShow>(`tv/${id}?append_to_response=videos,external_ids`);
   return { ...tvShow, media_type: 'tv' };
+}
+
+export async function getMovieRecommendations(id: number, page: number = 1): Promise<TMDBListResponse<Movie>> {
+  const data = await fetchTMDB<TMDBListResponse<Movie>>(`movie/${id}/recommendations`, { page: page.toString() });
+  return {
+    ...data,
+    results: data.results.map(item => ({ ...item, media_type: 'movie' }))
+  };
+}
+
+export async function getTVShowRecommendations(id: number, page: number = 1): Promise<TMDBListResponse<TVShow>> {
+  const data = await fetchTMDB<TMDBListResponse<TVShow>>(`tv/${id}/recommendations`, { page: page.toString() });
+  return {
+    ...data,
+    results: data.results.map(item => ({ ...item, media_type: 'tv' }))
+  };
 }

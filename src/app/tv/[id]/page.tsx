@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { getTVShowDetails, type TVShow, type Season } from '@/lib/tmdb';
+import { getTVShowDetails, type TVShow, type Season, type ContentItem, getTVShowRecommendations } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb-utils';
 import { Star, CalendarDays, Tv, Play, X, YoutubeIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -15,9 +15,11 @@ import { cn } from '@/lib/utils';
 import CommentSection from '@/components/CommentSection';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import ContentSlider from '@/components/ContentSlider';
 
 export default function TVShowDetailPage() {
   const params = useParams<{ id: string }>();
+  const tvShowId = Number(params.id);
   const [tvShow, setTvShow] = useState<TVShow | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,17 +30,18 @@ export default function TVShowDetailPage() {
   const [selectedSeason, setSelectedSeason] = useState<number | null>(null);
   const [selectedEpisode, setSelectedEpisode] = useState<number | null>(null);
   const [currentSeasonDetails, setCurrentSeasonDetails] = useState<Season | null>(null);
+  const [recommendations, setRecommendations] = useState<ContentItem[]>([]);
 
   useEffect(() => {
     async function fetchShow() {
-      if (!params?.id) {
+      if (!tvShowId) {
         setIsLoading(false);
         setErrorOccurred(true);
         return;
       }
       try {
         setIsLoading(true);
-        const showData = await getTVShowDetails(Number(params.id));
+        const showData = await getTVShowDetails(tvShowId);
         setTvShow(showData);
 
         if (showData.videos && showData.videos.results.length > 0) {
@@ -69,16 +72,22 @@ export default function TVShowDetailPage() {
           }
         }
         setErrorOccurred(false);
+
+        // Fetch recommendations
+        const recommendationsData = await getTVShowRecommendations(tvShowId);
+        setRecommendations(recommendationsData.results);
+
       } catch (error) {
-        console.error(`Failed to load TV show details for ID ${params.id}:`, error);
+        console.error(`Failed to load TV show details for ID ${tvShowId}:`, error);
         setErrorOccurred(true);
         setTvShow(null);
+        setRecommendations([]);
       } finally {
         setIsLoading(false);
       }
     }
     fetchShow();
-  }, [params]);
+  }, [tvShowId]);
 
   useEffect(() => {
     if (tvShow && selectedSeason !== null) {
@@ -344,6 +353,13 @@ export default function TVShowDetailPage() {
             )}
           </div>
         </div>
+        
+        {recommendations.length > 0 && (
+          <div className="mt-12">
+            <ContentSlider items={recommendations} title="You Might Also Like" />
+          </div>
+        )}
+        
         <CommentSection />
       </div>
     </div>
