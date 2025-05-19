@@ -2,20 +2,25 @@
 import { searchContent, type ContentItem } from '@/lib/tmdb';
 import ContentGrid from '@/components/ContentGrid';
 import { Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 interface SearchPageProps {
-  searchParams: { q?: string };
+  searchParams: { q?: string; page?: string };
 }
 
-async function SearchResults({ query }: { query: string }) {
+async function SearchResults({ query, currentPage }: { query: string; currentPage: number }) {
   let searchResults: ContentItem[] = [];
+  let totalPages = 1;
   let errorOccurred = false;
 
   if (query) {
     try {
-      const data = await searchContent(query);
+      const data = await searchContent(query, currentPage);
       searchResults = data.results;
+      totalPages = data.total_pages;
     } catch (error) {
       console.error("Failed to search content:", error);
       errorOccurred = true;
@@ -47,11 +52,53 @@ async function SearchResults({ query }: { query: string }) {
     );
   }
 
-  return <ContentGrid items={searchResults} />;
+  return (
+    <>
+      <ContentGrid items={searchResults} />
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center space-x-4 mt-12">
+          <Link
+            href={`/search?q=${encodeURIComponent(query)}&page=${currentPage - 1}`}
+            passHref
+            legacyBehavior
+          >
+            <Button
+              variant="outline"
+              disabled={currentPage <= 1}
+              className={cn(currentPage <= 1 && "opacity-50 cursor-not-allowed")}
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Previous
+            </Button>
+          </Link>
+          <span className="text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Link
+            href={`/search?q=${encodeURIComponent(query)}&page=${currentPage + 1}`}
+            passHref
+            legacyBehavior
+          >
+            <Button
+              variant="outline"
+              disabled={currentPage >= totalPages}
+              className={cn(currentPage >= totalPages && "opacity-50 cursor-not-allowed")}
+              aria-label="Next page"
+            >
+              Next
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      )}
+    </>
+  );
 }
 
 export default function SearchPage({ searchParams }: SearchPageProps) {
   const query = searchParams.q || '';
+  const currentPage = Number(searchParams.page) || 1;
 
   return (
     <div>
@@ -60,7 +107,7 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
         {!query && <span className="text-foreground">Explore</span>}
       </h1>
       <Suspense fallback={<SearchPageLoading query={query} />}>
-        <SearchResults query={query} />
+        <SearchResults query={query} currentPage={currentPage} />
       </Suspense>
     </div>
   );
