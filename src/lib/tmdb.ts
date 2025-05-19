@@ -1,11 +1,12 @@
+
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/';
 
-// Ensure this is set in your .env.local file
+// Ensure this is set in your .env file
 if (!TMDB_API_KEY) {
   console.warn(
-    "TMDB_API_KEY is not set. Please add it to your .env.local file. Some features may not work."
+    "Warning: TMDB_API_KEY environment variable is not set. Please ensure it's defined in your .env file and the server has been restarted. Some features may not work."
   );
 }
 
@@ -22,6 +23,8 @@ export interface Movie {
   popularity: number;
   genres?: { id: number; name: string }[];
   media_type?: 'movie';
+  tagline?: string; // Added for movie details
+  runtime?: number; // Added for movie details
 }
 
 export interface TVShow {
@@ -37,6 +40,16 @@ export interface TVShow {
   popularity: number;
   genres?: { id: number; name: string }[];
   media_type?: 'tv';
+  tagline?: string; // Added for TV show details
+  number_of_seasons?: number; // Added for TV show details
+  seasons?: {
+    id: number;
+    name: string;
+    poster_path: string | null;
+    season_number: number;
+    episode_count: number;
+    air_date: string | null;
+  }[]; // Added for TV show details
 }
 
 export type ContentItem = Movie | TVShow;
@@ -50,7 +63,7 @@ interface TMDBListResponse<T> {
 
 async function fetchTMDB<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
   if (!TMDB_API_KEY) {
-    throw new Error("TMDB_API_KEY is not configured.");
+    throw new Error("TMDB_API_KEY is not configured. Please ensure it is set in your .env file and that you have restarted your development server.");
   }
   const urlParams = new URLSearchParams({
     api_key: TMDB_API_KEY,
@@ -76,35 +89,59 @@ async function fetchTMDB<T>(endpoint: string, params: Record<string, string> = {
 
 export const getImageUrl = (path: string | null, size: 'w300' | 'w500' | 'w780' | 'original' = 'w500'): string => {
   if (!path) {
-    return 'https://placehold.co/500x750.png'; // Default placeholder
+    // Updated placeholder to match requested dimensions if possible, but using a generic one.
+    // For a 2:3 aspect ratio like posters, 500x750 is good. For backdrops, it varies.
+    // Using a generic placeholder, specific aspect ratio placeholders can be complex.
+    return 'https://placehold.co/500x750.png'; 
   }
   return `${TMDB_IMAGE_BASE_URL}${size}${path}`;
 };
 
 export async function getPopularMovies(page: number = 1): Promise<TMDBListResponse<Movie>> {
-  return fetchTMDB<TMDBListResponse<Movie>>('movie/popular', { page: page.toString() });
+  const data = await fetchTMDB<TMDBListResponse<Movie>>('movie/popular', { page: page.toString() });
+  return {
+    ...data,
+    results: data.results.map(item => ({ ...item, media_type: 'movie' }))
+  };
 }
 
 export async function getPopularTVShows(page: number = 1): Promise<TMDBListResponse<TVShow>> {
-  return fetchTMDB<TMDBListResponse<TVShow>>('tv/popular', { page: page.toString() });
+  const data = await fetchTMDB<TMDBListResponse<TVShow>>('tv/popular', { page: page.toString() });
+   return {
+    ...data,
+    results: data.results.map(item => ({ ...item, media_type: 'tv' }))
+  };
 }
 
 export async function getTopRatedMovies(page: number = 1): Promise<TMDBListResponse<Movie>> {
-  return fetchTMDB<TMDBListResponse<Movie>>('movie/top_rated', { page: page.toString() });
+  const data = await fetchTMDB<TMDBListResponse<Movie>>('movie/top_rated', { page: page.toString() });
+  return {
+    ...data,
+    results: data.results.map(item => ({ ...item, media_type: 'movie' }))
+  };
 }
 
 export async function getTrendingAllWeek(page: number = 1): Promise<TMDBListResponse<ContentItem>> {
+  // Results from trending/all/week can be movies or tv shows, media_type is usually included by TMDB
   return fetchTMDB<TMDBListResponse<ContentItem>>('trending/all/week', { page: page.toString() });
 }
 
 export async function searchContent(query: string, page: number = 1): Promise<TMDBListResponse<ContentItem>> {
-  return fetchTMDB<TMDBListResponse<ContentItem>>('search/multi', { query, page: page.toString(), include_adult: 'false' });
+  // Results from search/multi can be movies or tv shows, media_type is usually included by TMDB
+  // Filter out people results if any, as ContentItem only supports Movie or TVShow
+  const data = await fetchTMDB<TMDBListResponse<any>>('search/multi', { query, page: page.toString(), include_adult: 'false' });
+  return {
+    ...data,
+    results: data.results.filter(item => item.media_type === 'movie' || item.media_type === 'tv')
+  };
 }
 
 export async function getMovieDetails(id: number): Promise<Movie> {
-  return fetchTMDB<Movie>(`movie/${id}`);
+  const movie = await fetchTMDB<Movie>(`movie/${id}`);
+  return { ...movie, media_type: 'movie' };
 }
 
 export async function getTVShowDetails(id: number): Promise<TVShow> {
-  return fetchTMDB<TVShow>(`tv/${id}`);
+  const tvShow = await fetchTMDB<TVShow>(`tv/${id}?append_to_response=seasons`); // Ensure seasons are fetched
+  return { ...tvShow, media_type: 'tv' };
 }
