@@ -61,8 +61,7 @@ export default function TVShowDetailPage() {
           const firstRegularSeason = showData.seasons.find(s => s.season_number > 0 && s.episode_count > 0);
           if (firstRegularSeason) {
             setSelectedSeason(firstRegularSeason.season_number);
-            // setCurrentSeasonDetails will be set by the other useEffect
-            // setSelectedEpisode will be set by the other useEffect
+            // setCurrentSeasonDetails and setSelectedEpisode will be set by the other useEffect
           } else {
              const anySeasonWithEpisodes = showData.seasons.find(s => s.episode_count > 0);
              if (anySeasonWithEpisodes) {
@@ -304,7 +303,7 @@ export default function TVShowDetailPage() {
                     </div>
                     <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
                         <iframe
-                            key={playerUrl} // Added key here
+                            key={playerUrl} 
                             src={playerUrl}
                             title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc`}
                             sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
