@@ -87,7 +87,7 @@ export default function MovieDetailPage() {
   }
 
   const canWatch = !!movie.external_ids?.imdb_id;
-  const playerUrl = canWatch ? `https://godriveplayer.com/player.php?imdb=${movie.external_ids.imdb_id}` : '';
+  const playerUrl = canWatch && movie.external_ids.imdb_id ? `https://godriveplayer.com/player.php?imdb=${movie.external_ids.imdb_id}` : '';
 
   return (
     <div className="min-h-screen">
