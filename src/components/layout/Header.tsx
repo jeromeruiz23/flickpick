@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { Film, Search, Sparkles, ChevronDown } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
@@ -8,6 +9,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import React, { Suspense } from 'react';
+import { Input } from '@/components/ui/input';
 
 const genres = [
   { name: "Action", query: "Action" },
@@ -19,6 +22,23 @@ const genres = [
   { name: "Animation", query: "Animation" },
   { name: "Documentary", query: "Documentary" },
 ];
+
+function SearchBarFallback() {
+  return (
+    <form className="flex items-center space-x-2 relative">
+      <Input
+        type="text"
+        placeholder="Search movies & TV shows..."
+        className="h-9 w-40 md:w-64 bg-input text-foreground placeholder-muted-foreground border-border pr-8"
+        disabled
+      />
+      <Button type="submit" variant="primary" size="icon" className="h-9 w-9 shrink-0" disabled>
+        <Search size={18} />
+        <span className="sr-only">Search</span>
+      </Button>
+    </form>
+  );
+}
 
 export default function Header() {
   return (
@@ -64,7 +84,9 @@ export default function Header() {
               </Link>
             </Button>
           </nav>
-          <SearchBar />
+          <Suspense fallback={<SearchBarFallback />}>
+            <SearchBar />
+          </Suspense>
           {/* Mobile Menu Trigger (optional, for future enhancement for smaller screens) */}
         </div>
       </div>
