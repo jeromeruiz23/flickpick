@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { getMovieDetails, type Movie, type ContentItem, getMovieRecommendations, type ExternalIds } from '@/lib/tmdb';
+import { getMovieDetails, type Movie, type ContentItem, getMovieRecommendations } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb-utils';
 import { Star, CalendarDays, Clapperboard, Play, X, YoutubeIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,7 @@ export default function MovieDetailPage() {
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [playerVisible, setPlayerVisible] = useState(true); // Player visible by default
+  const [playerVisible, setPlayerVisible] = useState(true); 
   const [playerUrl, setPlayerUrl] = useState<string | null>(null);
 
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
@@ -73,19 +73,19 @@ export default function MovieDetailPage() {
     fetchMovie();
   }, [movieId]);
   
-  const canWatch = !!movie?.id && movie.id > 0;
+  const canWatch = !!movie && !!movie.id && movie.id > 0;
 
   useEffect(() => {
-    if (movie && movie.id && canWatch) {
+    if (movie && movie.id && movie.id > 0) {
       setPlayerUrl(`https://vidsrc.to/embed/movie/${movie.id}`);
     } else {
       setPlayerUrl(null);
     }
-  }, [movie, canWatch]);
+  }, [movie]);
 
 
   const handleWatchClick = () => {
-    if (!canWatch || !movie || !movie.id) return;
+    if (!canWatch) return;
     setPlayerVisible(!playerVisible);
   };
 
@@ -185,10 +185,10 @@ export default function MovieDetailPage() {
               <h3 className="text-lg font-semibold text-foreground mb-2">Available Actions:</h3>
               <div className="flex flex-wrap gap-2 items-center">
                 <Button onClick={handleWatchClick} variant="primary" size="lg" disabled={!canWatch}>
-                    <Play className="mr-2 h-5 w-5" /> {playerVisible ? "Hide Player" : "Watch on VidSrc.to"}
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.to"}
                 </Button>
                 
-                {!canWatch && <p className="text-sm text-muted-foreground">TMDB ID not available, cannot play.</p>}
+                {!canWatch && <p className="text-sm text-muted-foreground">Movie ID not available, cannot play.</p>}
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
                     <DialogTrigger asChild>
@@ -242,7 +242,7 @@ export default function MovieDetailPage() {
                             src={playerUrl}
                             title={`Watch ${movie.title} on VidSrc.to`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                            sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
+                            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
                             referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
                         ></iframe>

@@ -24,7 +24,7 @@ export default function TVShowDetailPage() {
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [playerVisible, setPlayerVisible] = useState(true); // Player visible by default
+  const [playerVisible, setPlayerVisible] = useState(true); 
   const [playerUrl, setPlayerUrl] = useState<string | null>(null);
 
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
@@ -116,7 +116,7 @@ export default function TVShowDetailPage() {
 
 
   const handleWatchClick = () => {
-     if (!canWatch || !tvShow || !tvShow.id || selectedSeason === null || selectedEpisode === null) return;
+     if (!canWatch) return;
      setPlayerVisible(!playerVisible);
   };
 
@@ -142,7 +142,7 @@ export default function TVShowDetailPage() {
     );
   }
   
-  const canWatch = tvShow?.id !== null && tvShow.id > 0 && selectedSeason !== null && selectedSeason > 0 && selectedEpisode !== null && selectedEpisode > 0;
+  const canWatch = !!tvShow && !!tvShow.id && tvShow.id > 0 && selectedSeason !== null && selectedSeason > 0 && selectedEpisode !== null && selectedEpisode > 0;
   const availableSeasons = tvShow.seasons?.filter(s => s.episode_count > 0) || [];
 
   return (
@@ -272,7 +272,7 @@ export default function TVShowDetailPage() {
                   size="lg"
                   disabled={!canWatch}
                 >
-                    <Play className="mr-2 h-5 w-5" /> {playerVisible ? "Hide Player" : "Watch on VidSrc.to"}
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.to"}
                 </Button>
 
                 {trailerKey && (
@@ -328,7 +328,7 @@ export default function TVShowDetailPage() {
                             src={playerUrl}
                             title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.to`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                            sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
+                            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
                             referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
                         ></iframe>
