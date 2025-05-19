@@ -282,7 +282,7 @@ export default function TVShowDetailPage() {
                         <YoutubeIcon className="mr-2 h-5 w-5" /> Watch Trailer
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-3xl p-0">
+                    <DialogContent className="max-w-3xl p-0 z-[60]">
                       <DialogHeader className="sr-only">
                         <DialogTitle>{tvShow.name} Trailer</DialogTitle>
                       </DialogHeader>
@@ -330,6 +330,7 @@ export default function TVShowDetailPage() {
                             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
+                            // sandbox attribute was previously removed for max permissiveness
                         ></iframe>
                     </div>
                   </>
@@ -377,4 +378,3 @@ export default function TVShowDetailPage() {
     </div>
   );
 }
-
