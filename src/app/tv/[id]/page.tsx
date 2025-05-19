@@ -1,36 +1,47 @@
+
+'use client';
+
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { getTVShowDetails, getImageUrl, type TVShow } from '@/lib/tmdb';
-import { Star, CalendarDays, Tv, Users } from 'lucide-react';
+import { Star, CalendarDays, Tv, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface TVShowDetailPageProps {
   params: { id: string };
 }
 
-export async function generateMetadata({ params }: TVShowDetailPageProps) {
-  try {
-    const tvShow = await getTVShowDetails(Number(params.id));
-    return {
-      title: `${tvShow.name} - FlickPick`,
-      description: tvShow.overview,
-    };
-  } catch (error) {
-    return {
-      title: 'TV Show Not Found - FlickPick',
-      description: 'Details for this TV show could not be loaded.',
-    };
-  }
-}
+export default function TVShowDetailPage({ params }: TVShowDetailPageProps) {
+  const [tvShow, setTvShow] = useState<TVShow | null>(null);
+  const [errorOccurred, setErrorOccurred] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showPlayer, setShowPlayer] = useState(false);
 
-export default async function TVShowDetailPage({ params }: TVShowDetailPageProps) {
-  let tvShow: TVShow | null = null;
-  let errorOccurred = false;
+  useEffect(() => {
+    async function fetchShow() {
+      try {
+        setIsLoading(true);
+        const showData = await getTVShowDetails(Number(params.id));
+        setTvShow(showData);
+        setErrorOccurred(false);
+      } catch (error) {
+        console.error(`Failed to load TV show details for ID ${params.id}:`, error);
+        setErrorOccurred(true);
+        setTvShow(null);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchShow();
+  }, [params.id]);
 
-  try {
-    tvShow = await getTVShowDetails(Number(params.id));
-  } catch (error) {
-    console.error(`Failed to load TV show details for ID ${params.id}:`, error);
-    errorOccurred = true;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
+        <p className="text-muted-foreground text-lg">Loading TV show details...</p>
+      </div>
+    );
   }
 
   if (errorOccurred || !tvShow) {
@@ -41,6 +52,8 @@ export default async function TVShowDetailPage({ params }: TVShowDetailPageProps
       </div>
     );
   }
+
+  const vidsrcUrl = `https://vidsrc.to/embed/tv/${tvShow.id}`;
 
   return (
     <div className="min-h-screen">
@@ -115,6 +128,23 @@ export default async function TVShowDetailPage({ params }: TVShowDetailPageProps
               <p className="text-foreground/80 leading-relaxed whitespace-pre-wrap">{tvShow.overview}</p>
             </div>
 
+            <div className="mt-8">
+              <Button onClick={() => setShowPlayer(!showPlayer)} variant="primary" size="lg" className="w-full md:w-auto">
+                  <Play className="mr-2 h-5 w-5" /> {showPlayer ? 'Hide Player' : 'Watch Now on VidSrc'}
+              </Button>
+              {showPlayer && (
+                  <div className="mt-6 aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
+                      <iframe
+                          src={vidsrcUrl}
+                          title={`Watch ${tvShow.name}`}
+                          allowFullScreen
+                          className="w-full h-full"
+                          sandbox="allow-scripts allow-same-origin allow-presentation"
+                      ></iframe>
+                  </div>
+              )}
+            </div>
+
              {/* Seasons Information */}
             {tvShow.seasons && tvShow.seasons.length > 0 && (
               <div className="mt-8">
@@ -146,4 +176,19 @@ export default async function TVShowDetailPage({ params }: TVShowDetailPageProps
       </div>
     </div>
   );
+}
+
+export async function generateMetadata({ params }: TVShowDetailPageProps) {
+  try {
+    const tvShow = await getTVShowDetails(Number(params.id));
+    return {
+      title: `${tvShow.name} - FlickPick`,
+      description: tvShow.overview,
+    };
+  } catch (error) {
+    return {
+      title: 'TV Show Not Found - FlickPick',
+      description: 'Details for this TV show could not be loaded.',
+    };
+  }
 }
