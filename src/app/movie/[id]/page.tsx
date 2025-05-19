@@ -170,6 +170,7 @@ export default function MovieDetailPage() {
                             src={activePlayerUrl}
                             title={`Watch ${movie.title}${activeSourceName ? ` on ${activeSourceName}` : ''}`}
                             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                            referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
                         ></iframe>
                     </div>
