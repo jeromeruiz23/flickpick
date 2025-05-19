@@ -24,12 +24,21 @@ const genres = [
 ];
 
 const categories = [
-  { name: "Japanese", query: "Japanese" },
-  { name: "Korean", query: "Korean" },
-  { name: "Chinese", query: "Chinese" },
-  { name: "Thai", query: "Thai" },
-  { name: "Filipino", query: "Filipino" },
-  { name: "Indian", query: "Indian" },
+  { name: "American", query: "American cinema" },
+  { name: "British", query: "British cinema" },
+  { name: "Japanese", query: "Japanese cinema" },
+  { name: "Korean", query: "Korean cinema" },
+  { name: "Chinese", query: "Chinese cinema" },
+  { name: "Indian", query: "Indian cinema" },
+  { name: "European", query: "European cinema" },
+  { name: "French", query: "French cinema" },
+  { name: "German", query: "German cinema" },
+  { name: "Italian", query: "Italian cinema" },
+  { name: "Spanish", query: "Spanish cinema" },
+  { name: "Canadian", query: "Canadian cinema" },
+  { name: "Australian", query: "Australian cinema" },
+  { name: "Thai", query: "Thai cinema" },
+  { name: "Filipino", query: "Filipino cinema" },
 ];
 
 function SearchBarFallback() {
@@ -92,8 +101,8 @@ export default function Header() {
                   Categories <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="bg-popover text-popover-foreground">
-                {categories.map((category) => (
+              <DropdownMenuContent align="start" className="bg-popover text-popover-foreground max-h-96 overflow-y-auto">
+                {categories.sort((a, b) => a.name.localeCompare(b.name)).map((category) => (
                   <DropdownMenuItem key={category.name} asChild>
                     <Link href={`/search?q=${encodeURIComponent(category.query)}`} className="hover:bg-accent hover:text-accent-foreground">
                       {category.name}
