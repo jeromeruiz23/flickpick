@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function PolicyPage() {
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4 prose prose-invert">
+    <div className="max-w-3xl mx-auto py-8 px-4 prose prose-invert dark:prose-invert">
       <div className="flex items-center justify-center mb-10">
         <FileText className="h-12 w-12 text-primary mr-3" />
         <h1 className="text-4xl font-bold text-foreground !mb-0">Privacy Policy</h1>
