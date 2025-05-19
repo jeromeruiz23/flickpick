@@ -327,10 +327,9 @@ export default function TVShowDetailPage() {
                             key={playerUrl} 
                             src={playerUrl}
                             title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.icu`}
-                            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
-                            // sandbox attribute was previously removed for max permissiveness
                         ></iframe>
                     </div>
                   </>
