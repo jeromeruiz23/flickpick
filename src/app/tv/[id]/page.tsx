@@ -16,8 +16,7 @@ export default function TVShowDetailPage() {
   const [tvShow, setTvShow] = useState<TVShow | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [activePlayerUrl, setActivePlayerUrl] = useState<string | null>(null);
-  const [activeSourceName, setActiveSourceName] = useState<string | null>(null);
+  const [playerVisible, setPlayerVisible] = useState(false);
 
   useEffect(() => {
     async function fetchShow() {
@@ -42,16 +41,8 @@ export default function TVShowDetailPage() {
     fetchShow();
   }, [params]);
 
-  const handlePlay = (sourceName: string, baseUrl: string) => {
-    if (tvShow) {
-      setActivePlayerUrl(`${baseUrl}/tv/${tvShow.id}`);
-      setActiveSourceName(sourceName);
-    }
-  };
-
-  const handleClosePlayer = () => {
-    setActivePlayerUrl(null);
-    setActiveSourceName(null);
+  const handleTogglePlayer = () => {
+    setPlayerVisible(!playerVisible);
   };
 
   if (isLoading) {
@@ -71,6 +62,8 @@ export default function TVShowDetailPage() {
       </div>
     );
   }
+
+  const playerUrl = `https://f4movies.to/embed/tv/${tvShow.id}`;
 
   return (
     <div className="min-h-screen">
@@ -143,32 +136,23 @@ export default function TVShowDetailPage() {
 
             <div className="mt-8 space-y-4">
               <h3 className="text-lg font-semibold text-foreground">Watch Now:</h3>
-              <div className="flex flex-wrap gap-3">
-                <Button onClick={() => handlePlay('VidSrc.to', 'https://vidsrc.to/embed')} variant="primary" size="sm">
-                    <Play className="mr-2 h-4 w-4" /> Watch on VidSrc.to
-                </Button>
-                <Button onClick={() => handlePlay('VidSrc.xyz', 'https://vidsrc.xyz/embed')} variant="secondary" size="sm">
-                    <Play className="mr-2 h-4 w-4" /> Watch on VidSrc.xyz
-                </Button>
-                <Button onClick={() => handlePlay('VidSrc.me', 'https://vidsrc.me/embed')} variant="secondary" size="sm">
-                    <Play className="mr-2 h-4 w-4" /> Watch on VidSrc.me
-                </Button>
-              </div>
+               <Button onClick={handleTogglePlayer} variant="primary" size="lg">
+                  <Play className="mr-2 h-5 w-5" /> Watch on F4NoAds
+              </Button>
 
-              {activePlayerUrl && (
+              {playerVisible && (
                   <div className="mt-6">
                     <div className="flex justify-between items-center mb-2">
-                        <p className="text-sm text-muted-foreground">Playing on: {activeSourceName}</p>
-                         <Button onClick={handleClosePlayer} variant="ghost" size="icon" className="h-8 w-8">
+                        <p className="text-sm text-muted-foreground">Playing on: F4NoAds</p>
+                         <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
                             <span className="sr-only">Close Player</span>
                         </Button>
                     </div>
                     <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
                         <iframe
-                            key={activePlayerUrl}
-                            src={activePlayerUrl}
-                            title={`Watch ${tvShow.name}${activeSourceName ? ` on ${activeSourceName}` : ''}`}
+                            src={playerUrl}
+                            title={`Watch ${tvShow.name} on F4NoAds`}
                             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                             referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
