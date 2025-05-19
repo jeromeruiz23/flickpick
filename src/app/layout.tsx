@@ -26,8 +26,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark"> {/* Ensure dark class is applied for shadcn components */}
+    <html lang="en" className="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
+        {/* The comment "Ensure dark class is applied for shadcn components" was removed from between html and body to prevent whitespace issues */}
         <Header />
         <main className="flex-grow container mx-auto px-4 py-8">
           {children}
