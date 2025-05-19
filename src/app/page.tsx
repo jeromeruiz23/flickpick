@@ -1,6 +1,8 @@
+
 import { getPopularMovies, getPopularTVShows, getTrendingAllWeek, type ContentItem } from '@/lib/tmdb';
 import ContentGrid from '@/components/ContentGrid';
 import HeroSection from '@/components/HeroSection';
+import ContentSlider from '@/components/ContentSlider'; // New import
 
 export default async function HomePage() {
   let popularMovies: ContentItem[] = [];
@@ -32,6 +34,10 @@ export default async function HomePage() {
   return (
     <div className="space-y-12">
       {heroItem && <HeroSection item={heroItem} />}
+      
+      {/* New Slider Section for Recommendations */}
+      {trendingItems.length > 0 && <ContentSlider items={trendingItems} title="Featured Recommendations" />}
+      
       {trendingItems.length > 0 && <ContentGrid items={trendingItems} title="Trending This Week" />}
       {popularMovies.length > 0 && <ContentGrid items={popularMovies} title="Popular Movies" />}
       {popularTVShows.length > 0 && <ContentGrid items={popularTVShows} title="Popular TV Shows" />}
