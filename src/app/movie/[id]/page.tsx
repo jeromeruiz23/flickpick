@@ -153,9 +153,10 @@ export default function MovieDetailPage() {
                         <iframe
                             src={playerUrl}
                             title={`Watch ${movie.title} on VidSrc`}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             allowFullScreen
                             referrerPolicy="no-referrer-when-downgrade"
+                            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
                             className="w-full h-full"
                         ></iframe>
                     </div>
