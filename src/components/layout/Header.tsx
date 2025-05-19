@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import React, { Suspense } from 'react';
 import { Input } from '@/components/ui/input';
+import { ScrollArea } from "@/components/ui/scroll-area"; // Added import
 
 const genres = [
   { name: "Action", query: "Action" },
@@ -25,20 +26,20 @@ const genres = [
 
 const categories = [
   { name: "American", query: "American cinema" },
+  { name: "Australian", query: "Australian cinema" },
   { name: "British", query: "British cinema" },
-  { name: "Japanese", query: "Japanese cinema" },
-  { name: "Korean", query: "Korean cinema" },
+  { name: "Canadian", query: "Canadian cinema" },
   { name: "Chinese", query: "Chinese cinema" },
-  { name: "Indian", query: "Indian cinema" },
   { name: "European", query: "European cinema" },
+  { name: "Filipino", query: "Filipino cinema" },
   { name: "French", query: "French cinema" },
   { name: "German", query: "German cinema" },
+  { name: "Indian", query: "Indian cinema" },
   { name: "Italian", query: "Italian cinema" },
+  { name: "Japanese", query: "Japanese cinema" },
+  { name: "Korean", query: "Korean cinema" },
   { name: "Spanish", query: "Spanish cinema" },
-  { name: "Canadian", query: "Canadian cinema" },
-  { name: "Australian", query: "Australian cinema" },
   { name: "Thai", query: "Thai cinema" },
-  { name: "Filipino", query: "Filipino cinema" },
 ];
 
 function SearchBarFallback() {
@@ -101,14 +102,17 @@ export default function Header() {
                   Categories <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="bg-popover text-popover-foreground max-h-96 overflow-y-auto">
-                {categories.sort((a, b) => a.name.localeCompare(b.name)).map((category) => (
-                  <DropdownMenuItem key={category.name} asChild>
-                    <Link href={`/search?q=${encodeURIComponent(category.query)}`} className="hover:bg-accent hover:text-accent-foreground">
-                      {category.name}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
+              <DropdownMenuContent align="start" className="bg-popover text-popover-foreground w-56">
+                <ScrollArea className="h-72">
+                  {/* Default p-1 from DropdownMenuContent will apply around this ScrollArea */}
+                  {categories.sort((a, b) => a.name.localeCompare(b.name)).map((category) => (
+                    <DropdownMenuItem key={category.name} asChild>
+                      <Link href={`/search?q=${encodeURIComponent(category.query)}`} className="hover:bg-accent hover:text-accent-foreground">
+                        {category.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </ScrollArea>
               </DropdownMenuContent>
             </DropdownMenu>
 
