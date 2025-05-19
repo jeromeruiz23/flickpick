@@ -1,19 +1,31 @@
+
 import { getPopularMovies, type ContentItem } from '@/lib/tmdb';
 import ContentGrid from '@/components/ContentGrid';
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'Popular Movies - FlickPick',
   description: 'Browse the most popular movies currently trending.',
 };
 
-export default async function MoviesPage() {
+interface MoviesPageProps {
+  searchParams: { page?: string };
+}
+
+export default async function MoviesPage({ searchParams }: MoviesPageProps) {
+  const currentPage = Number(searchParams.page) || 1;
   let popularMovies: ContentItem[] = [];
+  let totalPages = 1;
   let errorOccurred = false;
 
   try {
-    const moviesData = await getPopularMovies();
+    const moviesData = await getPopularMovies(currentPage);
     popularMovies = moviesData.results;
+    totalPages = moviesData.total_pages;
   } catch (error) {
     console.error("Failed to load popular movies:", error);
     errorOccurred = true;
@@ -29,8 +41,51 @@ export default async function MoviesPage() {
           <h2 className="text-2xl font-semibold mb-4">Could Not Load Movies</h2>
           <p className="text-muted-foreground">There was an issue fetching popular movies. Please try again later.</p>
         </div>
+      ) : popularMovies.length === 0 ? (
+         <div className="text-center py-10">
+          <p className="text-lg text-muted-foreground">No popular movies found.</p>
+        </div>
       ) : (
-        <ContentGrid items={popularMovies} />
+        <>
+          <ContentGrid items={popularMovies} />
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center space-x-4 mt-12">
+              <Link
+                href={`/movies?page=${currentPage - 1}`}
+                passHref
+                legacyBehavior
+              >
+                <Button
+                  variant="outline"
+                  disabled={currentPage <= 1}
+                  className={cn(currentPage <= 1 && "opacity-50 cursor-not-allowed")}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="mr-2 h-4 w-4" />
+                  Previous
+                </Button>
+              </Link>
+              <span className="text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Link
+                href={`/movies?page=${currentPage + 1}`}
+                passHref
+                legacyBehavior
+              >
+                <Button
+                  variant="outline"
+                  disabled={currentPage >= totalPages}
+                  className={cn(currentPage >= totalPages && "opacity-50 cursor-not-allowed")}
+                  aria-label="Next page"
+                >
+                  Next
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
