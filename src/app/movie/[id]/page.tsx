@@ -10,6 +10,7 @@ import { Star, CalendarDays, Clapperboard, Play, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function MovieDetailPage() {
   const params = useParams<{ id: string }>();
@@ -140,28 +141,32 @@ export default function MovieDetailPage() {
                   <Play className="mr-2 h-5 w-5" /> Watch on VidSrc
               </Button>
 
-              {playerVisible && (
-                  <div className="mt-6">
-                    <div className="flex justify-between items-center mb-2">
-                        <p className="text-sm text-muted-foreground">Playing on: VidSrc</p>
-                        <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
-                            <X className="h-4 w-4" />
-                            <span className="sr-only">Close Player</span>
-                        </Button>
-                    </div>
-                    <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
-                        <iframe
-                            src={playerUrl}
-                            title={`Watch ${movie.title} on VidSrc`}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                            allowFullScreen
-                            referrerPolicy="no-referrer-when-downgrade"
-                            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
-                            className="w-full h-full"
-                        ></iframe>
-                    </div>
-                  </div>
-              )}
+              <div
+                className={cn(
+                  "transition-all duration-500 ease-in-out overflow-hidden",
+                  playerVisible
+                    ? "opacity-100 max-h-[70vh] mt-6"
+                    : "opacity-0 max-h-0 mt-0"
+                )}
+              >
+                <div className="flex justify-between items-center mb-2">
+                    <p className="text-sm text-muted-foreground">Playing on: VidSrc</p>
+                    <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Close Player</span>
+                    </Button>
+                </div>
+                <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
+                    <iframe
+                        src={playerUrl}
+                        title={`Watch ${movie.title} on VidSrc`}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                        sandbox="allow-forms allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts allow-popups-to-escape-sandbox"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        className="w-full h-full"
+                    ></iframe>
+                </div>
+              </div>
             </div>
           </div>
         </div>
