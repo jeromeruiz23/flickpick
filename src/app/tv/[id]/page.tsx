@@ -59,7 +59,7 @@ export default function TVShowDetailPage() {
     );
   }
 
-  const playerUrl = `https://hnembed.xyz/embed/tv?id=${tvShow.id}`;
+  const playerUrl = `https://vidsrc.to/embed/tv/${tvShow.id}`;
 
   return (
     <div className="min-h-screen">
@@ -136,7 +136,7 @@ export default function TVShowDetailPage() {
 
             <div className="mt-8">
               <Button onClick={() => setShowPlayer(!showPlayer)} variant="primary" size="lg" className="w-full md:w-auto">
-                  <Play className="mr-2 h-5 w-5" /> {showPlayer ? 'Hide Player' : 'Watch Now on HNEmbed'}
+                  <Play className="mr-2 h-5 w-5" /> {showPlayer ? 'Hide Player' : 'Watch Now on VidSrc'}
               </Button>
               {showPlayer && (
                   <div className="mt-6 aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
@@ -145,7 +145,7 @@ export default function TVShowDetailPage() {
                           title={`Watch ${tvShow.name}`}
                           allow="fullscreen"
                           className="w-full h-full"
-                          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-popups-to-escape-sandbox"
+                          sandbox="allow-forms allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts allow-popups-to-escape-sandbox"
                       ></iframe>
                   </div>
               )}
