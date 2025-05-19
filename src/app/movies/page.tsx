@@ -1,34 +1,60 @@
+'use client';
 
-import { getPopularMovies, type ContentItem } from '@/lib/tmdb';
+import { useSearchParams } from 'next/navigation';
+import useSWR from 'swr';
 import ContentGrid from '@/components/ContentGrid';
-import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { ContentItem, Movie } from '@/lib/tmdb'; // Adjusted to import ContentItem as well for the grid
 
-export const metadata: Metadata = {
-  title: 'Popular Movies - FlickPick',
-  description: 'Browse the most popular movies currently trending.',
-};
-
-interface MoviesPageProps {
-  searchParams: { page?: string };
+interface TMDBListResponse<T> {
+  page: number;
+  results: T[];
+  total_pages: number;
+  total_results: number;
 }
 
-export default async function MoviesPage({ searchParams }: MoviesPageProps) {
-  const currentPage = Number(searchParams.page) || 1;
-  let popularMovies: ContentItem[] = [];
-  let totalPages = 1;
-  let errorOccurred = false;
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ message: 'An unknown error occurred during fetch.' }));
+    throw new Error(errorData.message || `An error occurred: ${res.statusText}`);
+  }
+  return res.json();
+};
 
-  try {
-    const moviesData = await getPopularMovies(currentPage);
-    popularMovies = moviesData.results;
-    totalPages = moviesData.total_pages;
-  } catch (error) {
-    console.error("Failed to load popular movies:", error);
-    errorOccurred = true;
+export default function MoviesPage() {
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get('page')) || 1;
+
+  const { data: moviesResponse, error, isLoading } = useSWR<TMDBListResponse<Movie>>(
+    `/api/movies/popular?page=${currentPage}`,
+    fetcher
+  );
+
+  const popularMovies: ContentItem[] = moviesResponse?.results?.map(movie => ({ ...movie, media_type: 'movie' })) || [];
+  const totalPages = moviesResponse?.total_pages || 1;
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
+        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground text-lg">Loading popular movies...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-10">
+        <h2 className="text-2xl font-semibold mb-4">Could Not Load Movies</h2>
+        <p className="text-muted-foreground">
+          There was an issue fetching popular movies: {error.message}. Please try again later.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -36,12 +62,7 @@ export default async function MoviesPage({ searchParams }: MoviesPageProps) {
       <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-8 border-l-4 border-primary pl-4">
         Popular Movies
       </h1>
-      {errorOccurred ? (
-        <div className="text-center py-10">
-          <h2 className="text-2xl font-semibold mb-4">Could Not Load Movies</h2>
-          <p className="text-muted-foreground">There was an issue fetching popular movies. Please try again later.</p>
-        </div>
-      ) : popularMovies.length === 0 ? (
+      {popularMovies.length === 0 && !isLoading ? ( // Added !isLoading check to avoid brief "No movies" flash
          <div className="text-center py-10">
           <p className="text-lg text-muted-foreground">No popular movies found.</p>
         </div>
@@ -53,7 +74,7 @@ export default async function MoviesPage({ searchParams }: MoviesPageProps) {
               <Link
                 href={`/movies?page=${currentPage - 1}`}
                 passHref
-                legacyBehavior
+                legacyBehavior // Maintained legacyBehavior as in original file
               >
                 <Button
                   variant="outline"
@@ -71,7 +92,7 @@ export default async function MoviesPage({ searchParams }: MoviesPageProps) {
               <Link
                 href={`/movies?page=${currentPage + 1}`}
                 passHref
-                legacyBehavior
+                legacyBehavior // Maintained legacyBehavior as in original file
               >
                 <Button
                   variant="outline"
