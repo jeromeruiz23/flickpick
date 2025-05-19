@@ -77,7 +77,7 @@ export default function MovieDetailPage() {
 
   useEffect(() => {
     if (movie && movie.id && movie.id > 0) {
-      setPlayerUrl(`https://vidsrc.to/embed/movie/${movie.id}`);
+      setPlayerUrl(`https://vidsrc.icu/embed/movie/${movie.id}`);
     } else {
       setPlayerUrl(null);
     }
@@ -185,7 +185,7 @@ export default function MovieDetailPage() {
               <h3 className="text-lg font-semibold text-foreground mb-2">Available Actions:</h3>
               <div className="flex flex-wrap gap-2 items-center">
                 <Button onClick={handleWatchClick} variant="primary" size="lg" disabled={!canWatch}>
-                    <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.to"}
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.icu"}
                 </Button>
                 
                 {!canWatch && <p className="text-sm text-muted-foreground">Movie ID not available, cannot play.</p>}
@@ -229,7 +229,7 @@ export default function MovieDetailPage() {
                   <>
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-sm text-muted-foreground">
-                          Playing on: VidSrc.to
+                          Playing on: VidSrc.icu
                         </p>
                         <Button onClick={closePlayer} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
@@ -240,7 +240,7 @@ export default function MovieDetailPage() {
                         <iframe
                             key={playerUrl} 
                             src={playerUrl}
-                            title={`Watch ${movie.title} on VidSrc.to`}
+                            title={`Watch ${movie.title} on VidSrc.icu`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation"
                             referrerPolicy="no-referrer-when-downgrade"

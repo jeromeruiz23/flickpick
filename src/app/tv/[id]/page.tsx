@@ -108,7 +108,7 @@ export default function TVShowDetailPage() {
 
   useEffect(() => {
     if (tvShow && tvShow.id > 0 && selectedSeason !== null && selectedSeason > 0 && selectedEpisode !== null && selectedEpisode > 0) {
-      setPlayerUrl(`https://vidsrc.to/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}`);
+      setPlayerUrl(`https://vidsrc.icu/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}`);
     } else {
       setPlayerUrl(null);
     }
@@ -272,7 +272,7 @@ export default function TVShowDetailPage() {
                   size="lg"
                   disabled={!canWatch}
                 >
-                    <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.to"}
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.icu"}
                 </Button>
 
                 {trailerKey && (
@@ -315,7 +315,7 @@ export default function TVShowDetailPage() {
                   <>
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-sm text-muted-foreground">
-                          Playing Season {selectedSeason} Episode {selectedEpisode} on VidSrc.to
+                          Playing Season {selectedSeason} Episode {selectedEpisode} on VidSrc.icu
                         </p>
                          <Button onClick={closePlayer} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
@@ -326,7 +326,7 @@ export default function TVShowDetailPage() {
                         <iframe
                             key={playerUrl} 
                             src={playerUrl}
-                            title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.to`}
+                            title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.icu`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation"
                             referrerPolicy="no-referrer-when-downgrade"
