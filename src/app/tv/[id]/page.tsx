@@ -21,7 +21,7 @@ export default function TVShowDetailPage() {
   const [tvShow, setTvShow] = useState<TVShow | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [playerVisible, setPlayerVisible] = useState(true); // Player is visible by default
+  const [playerVisible, setPlayerVisible] = useState(true);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
 
@@ -119,11 +119,11 @@ export default function TVShowDetailPage() {
       </div>
     );
   }
-
-  const playerUrl = tvShow && selectedSeason !== null && selectedEpisode !== null ? `https://vidsrc.to/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}` : '';
+  
+  const canWatch = tvShow?.id && selectedSeason !== null && selectedEpisode !== null;
+  const playerUrl = canWatch ? `https://godriveplayer.com/player.php?type=series&tmdb=${tvShow.id}&season=${selectedSeason}&episode=${selectedEpisode}` : '';
 
   const availableSeasons = tvShow.seasons?.filter(s => s.episode_count > 0) || [];
-  const canWatch = tvShow?.id && selectedSeason !== null && selectedEpisode !== null;
 
   return (
     <div className="min-h-screen">
@@ -252,7 +252,7 @@ export default function TVShowDetailPage() {
                   size="lg"
                   disabled={!canWatch}
                 >
-                    <Play className="mr-2 h-5 w-5" /> {playerVisible ? "Hide Player" : "Watch on VidSrc"}
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible && canWatch ? "Hide Player" : "Watch on GoDrivePlayer"}
                 </Button>
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
@@ -285,16 +285,16 @@ export default function TVShowDetailPage() {
               <div
                 className={cn(
                   "transition-all duration-500 ease-in-out overflow-hidden",
-                  playerVisible && playerUrl
+                  playerVisible && canWatch && playerUrl
                     ? "opacity-100 max-h-[70vh] mt-6"
                     : "opacity-0 max-h-0 mt-0"
                 )}
               >
-                {playerVisible && playerUrl && (
+                {playerVisible && canWatch && playerUrl && (
                   <>
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-sm text-muted-foreground">
-                          Playing Season {selectedSeason} Episode {selectedEpisode} on VidSrc.
+                          Playing Season {selectedSeason} Episode {selectedEpisode} on GoDrivePlayer.
                         </p>
                          <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
@@ -305,7 +305,7 @@ export default function TVShowDetailPage() {
                         <iframe
                             key={playerUrl} 
                             src={playerUrl}
-                            title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc`}
+                            title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on GoDrivePlayer`}
                             sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             referrerPolicy="no-referrer-when-downgrade"

@@ -19,7 +19,7 @@ export default function MovieDetailPage() {
   const [movie, setMovie] = useState<Movie | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [playerVisible, setPlayerVisible] = useState(true); // Player is visible by default
+  const [playerVisible, setPlayerVisible] = useState(true); 
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
 
@@ -42,7 +42,6 @@ export default function MovieDetailPage() {
           if (officialTrailer) {
             setTrailerKey(officialTrailer.key);
           } else {
-            // Fallback to any YouTube trailer if no official one is found
             const anyTrailer = movieData.videos.results.find(
               video => video.site === 'YouTube' && video.type === 'Trailer'
             );
@@ -64,7 +63,9 @@ export default function MovieDetailPage() {
   }, [params]);
 
   const handleTogglePlayer = () => {
-    setPlayerVisible(!playerVisible);
+    if (movie?.external_ids?.imdb_id) {
+        setPlayerVisible(!playerVisible);
+    }
   };
 
   if (isLoading) {
@@ -85,7 +86,8 @@ export default function MovieDetailPage() {
     );
   }
 
-  const playerUrl = `https://vidsrc.to/embed/movie/${movie.id}`;
+  const canWatch = !!movie.external_ids?.imdb_id;
+  const playerUrl = canWatch ? `https://godriveplayer.com/player.php?imdb=${movie.external_ids.imdb_id}` : '';
 
   return (
     <div className="min-h-screen">
@@ -160,9 +162,10 @@ export default function MovieDetailPage() {
             <div className="mt-8 space-y-4">
               <h3 className="text-lg font-semibold text-foreground mb-2">Available Actions:</h3>
               <div className="flex flex-wrap gap-2 items-center">
-                <Button onClick={handleTogglePlayer} variant="primary" size="lg">
-                    <Play className="mr-2 h-5 w-5" /> {playerVisible ? "Hide Player" : "Watch on VidSrc"}
+                <Button onClick={handleTogglePlayer} variant="primary" size="lg" disabled={!canWatch}>
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible && canWatch ? "Hide Player" : "Watch on GoDrivePlayer"}
                 </Button>
+                {!canWatch && <p className="text-sm text-muted-foreground">IMDb ID not available, cannot play.</p>}
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
                     <DialogTrigger asChild>
@@ -194,15 +197,15 @@ export default function MovieDetailPage() {
               <div
                 className={cn(
                   "transition-all duration-500 ease-in-out overflow-hidden",
-                  playerVisible
+                  playerVisible && canWatch && playerUrl
                     ? "opacity-100 max-h-[70vh] mt-6"
                     : "opacity-0 max-h-0 mt-0"
                 )}
               >
-                {playerVisible && (
+                {playerVisible && canWatch && playerUrl && (
                   <>
                     <div className="flex justify-between items-center mb-2">
-                        <p className="text-sm text-muted-foreground">Playing on: VidSrc</p>
+                        <p className="text-sm text-muted-foreground">Playing on: GoDrivePlayer</p>
                         <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
                             <span className="sr-only">Close Player</span>
@@ -210,8 +213,9 @@ export default function MovieDetailPage() {
                     </div>
                     <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
                         <iframe
+                            key={playerUrl}
                             src={playerUrl}
-                            title={`Watch ${movie.title} on VidSrc`}
+                            title={`Watch ${movie.title} on GoDrivePlayer`}
                             sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             referrerPolicy="no-referrer-when-downgrade"
@@ -224,7 +228,6 @@ export default function MovieDetailPage() {
             </div>
           </div>
         </div>
-        {/* Comment Section */}
         <CommentSection />
       </div>
     </div>

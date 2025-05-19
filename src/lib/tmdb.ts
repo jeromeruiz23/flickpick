@@ -28,6 +28,14 @@ interface MediaVideos {
   results: VideoResult[];
 }
 
+interface ExternalIds {
+  imdb_id?: string | null;
+  // Add other external IDs here if needed in the future
+  // facebook_id?: string | null;
+  // instagram_id?: string | null;
+  // twitter_id?: string | null;
+}
+
 export interface Movie {
   id: number;
   title: string;
@@ -44,6 +52,7 @@ export interface Movie {
   tagline?: string;
   runtime?: number;
   videos?: MediaVideos;
+  external_ids?: ExternalIds;
 }
 
 export interface Season {
@@ -53,7 +62,7 @@ export interface Season {
   season_number: number;
   episode_count: number;
   air_date: string | null;
-  overview?: string; // Added for more detail if needed
+  overview?: string; 
 }
 
 export interface TVShow {
@@ -73,6 +82,7 @@ export interface TVShow {
   number_of_seasons?: number;
   seasons?: Season[];
   videos?: MediaVideos;
+  external_ids?: ExternalIds; // Though not used by GoDrivePlayer for TV, keep for consistency
 }
 
 export type ContentItem = Movie | TVShow;
@@ -114,7 +124,10 @@ async function fetchTMDB<T>(endpoint: string, params: Record<string, string> = {
     return response.json();
   } catch (error) {
     console.error(`Network error or JSON parsing error fetching ${url}:`, error);
-    throw error;
+    if (error instanceof Error) {
+        throw new Error(`TMDB API request failed: ${error.message}`);
+    }
+    throw new Error('An unknown error occurred while fetching from TMDB.');
   }
 }
 
@@ -148,19 +161,19 @@ export async function getTrendingAllWeek(page: number = 1): Promise<TMDBListResp
 
 export async function searchContent(query: string, page: number = 1): Promise<TMDBListResponse<ContentItem>> {
   const data = await fetchTMDB<TMDBListResponse<any>>('search/multi', { query, page: page.toString(), include_adult: 'false' });
+  // Filter out persons or other non-movie/tv media types
   return {
     ...data,
-    results: data.results.filter(item => item.media_type === 'movie' || item.media_type === 'tv')
+    results: data.results.filter(item => (item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path)
   };
 }
 
 export async function getMovieDetails(id: number): Promise<Movie> {
-  const movie = await fetchTMDB<Movie>(`movie/${id}?append_to_response=videos`);
+  const movie = await fetchTMDB<Movie>(`movie/${id}?append_to_response=videos,external_ids`);
   return { ...movie, media_type: 'movie' };
 }
 
 export async function getTVShowDetails(id: number): Promise<TVShow> {
-  // Ensure 'seasons' is part of append_to_response if not already standard for tv details
-  const tvShow = await fetchTMDB<TVShow>(`tv/${id}?append_to_response=videos`);
+  const tvShow = await fetchTMDB<TVShow>(`tv/${id}?append_to_response=videos,external_ids`);
   return { ...tvShow, media_type: 'tv' };
 }
