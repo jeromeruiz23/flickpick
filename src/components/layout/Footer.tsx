@@ -8,7 +8,7 @@ export default function Footer() {
         <p className="text-muted-foreground text-sm">
           &copy; {new Date().getFullYear()} FlickPick. All rights reserved.
         </p>
-        <div className="mt-2 text-xs text-muted-foreground space-x-4">
+        <div className="mt-2 text-xs text-muted-foreground flex flex-wrap justify-center items-center space-x-2 sm:space-x-4">
           <Link href="/faqs" className="hover:text-primary transition-colors">
             FAQs
           </Link>

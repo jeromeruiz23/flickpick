@@ -40,7 +40,7 @@ export default function FaqsPage() {
     <div className="max-w-3xl mx-auto py-8 px-4">
       <div className="flex items-center justify-center mb-10">
         <ShieldQuestion className="h-12 w-12 text-primary mr-3" />
-        <h1 className="text-4xl font-bold text-foreground">Frequently Asked Questions</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Frequently Asked Questions</h1>
       </div>
 
       <Accordion type="single" collapsible className="w-full">
