@@ -303,8 +303,7 @@ export default function TVShowDetailPage() {
                         <iframe
                             src={playerUrl}
                             title={`Watch ${tvShow.name} - S${selectedSeason}E${selectedEpisode} on VidSrc`}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            sandbox="allow-forms allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts allow-popups-to-escape-sandbox"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
                         ></iframe>
@@ -346,4 +345,3 @@ export default function TVShowDetailPage() {
     </div>
   );
 }
-
