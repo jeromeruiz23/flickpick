@@ -3,16 +3,19 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useParams } from 'next/navigation';
 import { getMovieDetails, getImageUrl, type Movie } from '@/lib/tmdb';
 import { Star, CalendarDays, Clapperboard, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
-interface MovieDetailPageProps {
-  params: { id: string };
-}
+// Removed params from props, will use useParams hook
+// interface MovieDetailPageProps {
+//   params: { id: string };
+// }
 
-export default function MovieDetailPage({ params }: MovieDetailPageProps) {
+export default function MovieDetailPage() {
+  const params = useParams<{ id: string }>(); // Use useParams hook
   const [movie, setMovie] = useState<Movie | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,6 +23,7 @@ export default function MovieDetailPage({ params }: MovieDetailPageProps) {
 
   useEffect(() => {
     async function fetchMovie() {
+      if (!params || !params.id) return; // Ensure params.id is available
       try {
         setIsLoading(true);
         const movieData = await getMovieDetails(Number(params.id));
@@ -34,7 +38,7 @@ export default function MovieDetailPage({ params }: MovieDetailPageProps) {
       }
     }
     fetchMovie();
-  }, [params.id]);
+  }, [params?.id]); // params itself can be a dependency, or params.id
   
 
   if (isLoading) {
