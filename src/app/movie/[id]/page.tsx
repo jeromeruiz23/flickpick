@@ -15,13 +15,18 @@ import { cn } from '@/lib/utils';
 import CommentSection from '@/components/CommentSection';
 import ContentSlider from '@/components/ContentSlider';
 
+type PlayerSource = 'vidsrc' | '2embed' | null;
+
 export default function MovieDetailPage() {
   const params = useParams<{ id: string }>();
   const movieId = Number(params.id);
   const [movie, setMovie] = useState<Movie | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [playerVisible, setPlayerVisible] = useState(true); 
+  
+  const [activePlayerSource, setActivePlayerSource] = useState<PlayerSource>(null);
+  const [playerUrl, setPlayerUrl] = useState<string | null>(null);
+
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
   const [recommendations, setRecommendations] = useState<ContentItem[]>([]);
@@ -55,7 +60,6 @@ export default function MovieDetailPage() {
         }
         setErrorOccurred(false);
 
-        // Fetch recommendations
         const recommendationsData = await getMovieRecommendations(movieId);
         setRecommendations(recommendationsData.results);
 
@@ -71,10 +75,28 @@ export default function MovieDetailPage() {
     fetchMovie();
   }, [movieId]);
 
-  const handleTogglePlayer = () => {
-    if (movie?.id) { 
-        setPlayerVisible(!playerVisible);
+  const handleWatchClick = (source: PlayerSource) => {
+    if (!movie || !movie.id) return;
+
+    let url = '';
+    if (source === 'vidsrc') {
+      url = `https://vidsrc.to/embed/movie/${movie.id}`;
+    } else if (source === '2embed') {
+      url = `https://www.2embed.cc/embed/tmdb/movie?id=${movie.id}`;
     }
+    
+    if (activePlayerSource === source && playerUrl === url) { // If clicking the same active button
+      setActivePlayerSource(null); // Hide player
+      setPlayerUrl(null);
+    } else {
+      setPlayerUrl(url);
+      setActivePlayerSource(source);
+    }
+  };
+
+  const closePlayer = () => {
+    setActivePlayerSource(null);
+    setPlayerUrl(null);
   };
 
   if (isLoading) {
@@ -94,9 +116,8 @@ export default function MovieDetailPage() {
       </div>
     );
   }
-
+  
   const canWatch = !!movie?.id;
-  const playerUrl = canWatch ? `https://vidsrc.to/embed/movie/${movie.id}` : '';
 
   return (
     <div className="min-h-screen">
@@ -171,9 +192,13 @@ export default function MovieDetailPage() {
             <div className="mt-8 space-y-4">
               <h3 className="text-lg font-semibold text-foreground mb-2">Available Actions:</h3>
               <div className="flex flex-wrap gap-2 items-center">
-                <Button onClick={handleTogglePlayer} variant="primary" size="lg" disabled={!canWatch}>
-                    <Play className="mr-2 h-5 w-5" /> {playerVisible && canWatch ? "Hide Player" : "Watch on VidSrc.to"}
+                <Button onClick={() => handleWatchClick('vidsrc')} variant="primary" size="lg" disabled={!canWatch}>
+                    <Play className="mr-2 h-5 w-5" /> {activePlayerSource === 'vidsrc' ? "Hide Player" : "Watch on VidSrc.to"}
                 </Button>
+                <Button onClick={() => handleWatchClick('2embed')} variant="primary" size="lg" disabled={!canWatch}>
+                    <Play className="mr-2 h-5 w-5" /> {activePlayerSource === '2embed' ? "Hide Player" : "Watch on 2Embed"}
+                </Button>
+
                 {!canWatch && <p className="text-sm text-muted-foreground">TMDB ID not available, cannot play.</p>}
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
@@ -206,25 +231,27 @@ export default function MovieDetailPage() {
               <div
                 className={cn(
                   "transition-all duration-500 ease-in-out overflow-hidden",
-                  playerVisible && canWatch && playerUrl
+                  activePlayerSource && playerUrl
                     ? "opacity-100 max-h-[70vh] mt-6"
                     : "opacity-0 max-h-0 mt-0"
                 )}
               >
-                {playerVisible && canWatch && playerUrl && (
+                {activePlayerSource && playerUrl && (
                   <>
                     <div className="flex justify-between items-center mb-2">
-                        <p className="text-sm text-muted-foreground">Playing on: VidSrc.to</p>
-                        <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
+                        <p className="text-sm text-muted-foreground">
+                          Playing on: {activePlayerSource === 'vidsrc' ? 'VidSrc.to' : '2Embed'}
+                        </p>
+                        <Button onClick={closePlayer} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
                             <span className="sr-only">Close Player</span>
                         </Button>
                     </div>
                     <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
                         <iframe
-                            key={playerUrl}
+                            key={playerUrl} 
                             src={playerUrl}
-                            title={`Watch ${movie.title} on VidSrc.to`}
+                            title={`Watch ${movie.title} on ${activePlayerSource === 'vidsrc' ? 'VidSrc.to' : '2Embed'}`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
                             referrerPolicy="no-referrer-when-downgrade"

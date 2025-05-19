@@ -17,13 +17,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import ContentSlider from '@/components/ContentSlider';
 
+type PlayerSource = 'vidsrc' | '2embed' | null;
+
 export default function TVShowDetailPage() {
   const params = useParams<{ id: string }>();
   const tvShowId = Number(params.id);
   const [tvShow, setTvShow] = useState<TVShow | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [playerVisible, setPlayerVisible] = useState(true);
+  
+  const [activePlayerSource, setActivePlayerSource] = useState<PlayerSource>(null);
+  const [playerUrl, setPlayerUrl] = useState<string | null>(null);
+
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
 
@@ -73,7 +78,6 @@ export default function TVShowDetailPage() {
         }
         setErrorOccurred(false);
 
-        // Fetch recommendations
         const recommendationsData = await getTVShowRecommendations(tvShowId);
         setRecommendations(recommendationsData.results);
 
@@ -104,11 +108,41 @@ export default function TVShowDetailPage() {
     }
   }, [selectedSeason, tvShow]);
 
-
-  const handleTogglePlayer = () => {
-     if (tvShow?.id && selectedSeason !== null && selectedEpisode !== null) {
-      setPlayerVisible(!playerVisible);
+  useEffect(() => {
+    if (activePlayerSource && tvShow && selectedSeason !== null && selectedEpisode !== null) {
+      let url = '';
+      if (activePlayerSource === 'vidsrc') {
+        url = `https://vidsrc.to/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}`;
+      } else if (activePlayerSource === '2embed') {
+        url = `https://www.2embed.cc/embed/tmdb/tv?id=${tvShow.id}&s=${selectedSeason}&e=${selectedEpisode}`;
+      }
+      setPlayerUrl(url);
+    } else {
+      setPlayerUrl(null);
     }
+  }, [activePlayerSource, tvShow, selectedSeason, selectedEpisode]);
+
+
+  const handleWatchClick = (source: PlayerSource) => {
+     if (!tvShow || tvShow.id === null || selectedSeason === null || selectedEpisode === null) return;
+
+    let url = '';
+    if (source === 'vidsrc') {
+      url = `https://vidsrc.to/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}`;
+    } else if (source === '2embed') {
+      url = `https://www.2embed.cc/embed/tmdb/tv?id=${tvShow.id}&s=${selectedSeason}&e=${selectedEpisode}`;
+    }
+
+    if (activePlayerSource === source && playerUrl === url) {
+      setActivePlayerSource(null);
+    } else {
+      setActivePlayerSource(source);
+      setPlayerUrl(url); // Set explicitly here too for immediate effect
+    }
+  };
+
+  const closePlayer = () => {
+    setActivePlayerSource(null);
   };
 
   if (isLoading) {
@@ -129,9 +163,7 @@ export default function TVShowDetailPage() {
     );
   }
   
-  const canWatch = tvShow?.id && selectedSeason !== null && selectedEpisode !== null;
-  const playerUrl = canWatch ? `https://vidsrc.to/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}` : '';
-
+  const canWatch = tvShow?.id !== null && selectedSeason !== null && selectedEpisode !== null;
   const availableSeasons = tvShow.seasons?.filter(s => s.episode_count > 0) || [];
 
   return (
@@ -256,13 +288,22 @@ export default function TVShowDetailPage() {
 
               <div className="flex flex-wrap gap-2 items-center">
                 <Button 
-                  onClick={handleTogglePlayer} 
+                  onClick={() => handleWatchClick('vidsrc')} 
                   variant="primary" 
                   size="lg"
                   disabled={!canWatch}
                 >
-                    <Play className="mr-2 h-5 w-5" /> {playerVisible && canWatch ? "Hide Player" : "Watch on VidSrc.to"}
+                    <Play className="mr-2 h-5 w-5" /> {activePlayerSource === 'vidsrc' ? "Hide Player" : "Watch on VidSrc.to"}
                 </Button>
+                <Button 
+                  onClick={() => handleWatchClick('2embed')} 
+                  variant="primary" 
+                  size="lg"
+                  disabled={!canWatch}
+                >
+                    <Play className="mr-2 h-5 w-5" /> {activePlayerSource === '2embed' ? "Hide Player" : "Watch on 2Embed"}
+                </Button>
+
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
                     <DialogTrigger asChild>
@@ -294,18 +335,18 @@ export default function TVShowDetailPage() {
               <div
                 className={cn(
                   "transition-all duration-500 ease-in-out overflow-hidden",
-                  playerVisible && canWatch && playerUrl
+                  activePlayerSource && playerUrl
                     ? "opacity-100 max-h-[70vh] mt-6"
                     : "opacity-0 max-h-0 mt-0"
                 )}
               >
-                {playerVisible && canWatch && playerUrl && (
+                {activePlayerSource && playerUrl && (
                   <>
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-sm text-muted-foreground">
-                          Playing Season {selectedSeason} Episode {selectedEpisode} on VidSrc.to.
+                          Playing Season {selectedSeason} Episode {selectedEpisode} on {activePlayerSource === 'vidsrc' ? 'VidSrc.to' : '2Embed'}.
                         </p>
-                         <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
+                         <Button onClick={closePlayer} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
                             <span className="sr-only">Close Player</span>
                         </Button>
@@ -314,7 +355,7 @@ export default function TVShowDetailPage() {
                         <iframe
                             key={playerUrl} 
                             src={playerUrl}
-                            title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.to`}
+                            title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on ${activePlayerSource === 'vidsrc' ? 'VidSrc.to' : '2Embed'}`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
                             referrerPolicy="no-referrer-when-downgrade"
