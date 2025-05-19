@@ -329,7 +329,6 @@ export default function TVShowDetailPage() {
                             title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.icu`}
                             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             referrerPolicy="no-referrer-when-downgrade"
-                            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
                             className="w-full h-full"
                         ></iframe>
                     </div>

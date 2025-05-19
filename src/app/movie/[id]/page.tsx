@@ -77,7 +77,6 @@ export default function MovieDetailPage() {
 
   useEffect(() => {
     if (movie && movie.id && movie.id > 0) {
-      // Use TMDB ID for vidsrc.icu as per example https://vidsrc.icu/embed/movie/927085
       setPlayerUrl(`https://vidsrc.icu/embed/movie/${movie.id}`);
     } else {
       setPlayerUrl(null);
@@ -244,7 +243,6 @@ export default function MovieDetailPage() {
                             title={`Watch ${movie.title} on VidSrc.icu`}
                             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             referrerPolicy="no-referrer-when-downgrade"
-                            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
                             className="w-full h-full"
                         ></iframe>
                     </div>
