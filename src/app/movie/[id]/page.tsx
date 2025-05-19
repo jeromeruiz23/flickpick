@@ -63,7 +63,7 @@ export default function MovieDetailPage() {
     );
   }
 
-  const playerUrl = `https://loklok.com/web/view/video/type/1/id=${movie.id}`;
+  const playerUrl = `https://vidsrc.to/embed/movie/${movie.id}`;
 
   return (
     <div className="min-h-screen">
@@ -137,13 +137,13 @@ export default function MovieDetailPage() {
             <div className="mt-8 space-y-4">
               <h3 className="text-lg font-semibold text-foreground">Watch Now:</h3>
               <Button onClick={handleTogglePlayer} variant="primary" size="lg">
-                  <Play className="mr-2 h-5 w-5" /> Watch on Loklok
+                  <Play className="mr-2 h-5 w-5" /> Watch on VidSrc
               </Button>
 
               {playerVisible && (
                   <div className="mt-6">
                     <div className="flex justify-between items-center mb-2">
-                        <p className="text-sm text-muted-foreground">Playing on: Loklok</p>
+                        <p className="text-sm text-muted-foreground">Playing on: VidSrc</p>
                         <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
                             <span className="sr-only">Close Player</span>
@@ -152,7 +152,7 @@ export default function MovieDetailPage() {
                     <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
                         <iframe
                             src={playerUrl}
-                            title={`Watch ${movie.title} on Loklok`}
+                            title={`Watch ${movie.title} on VidSrc`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             allowFullScreen
                             referrerPolicy="no-referrer-when-downgrade"
