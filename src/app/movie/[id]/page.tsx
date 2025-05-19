@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { getMovieDetails, type Movie, type ContentItem, getMovieRecommendations, type ExternalIds } from '@/lib/tmdb';
+import { getMovieDetails, type Movie, type ContentItem, getMovieRecommendations } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb-utils';
 import { Star, CalendarDays, Clapperboard, Play, X, YoutubeIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -72,7 +72,7 @@ export default function MovieDetailPage() {
   }, [movieId]);
 
   const handleTogglePlayer = () => {
-    if (movie?.external_ids?.imdb_id) {
+    if (movie?.id) { // Check for movie.id now
         setPlayerVisible(!playerVisible);
     }
   };
@@ -95,8 +95,8 @@ export default function MovieDetailPage() {
     );
   }
 
-  const canWatch = !!movie.external_ids?.imdb_id;
-  const playerUrl = canWatch && movie.external_ids.imdb_id ? `https://godriveplayer.com/player.php?imdb=${movie.external_ids.imdb_id}` : '';
+  const canWatch = !!movie.id; // Movie ID should always be present if movie is loaded
+  const playerUrl = canWatch ? `https://godriveplayer.com/player.php?tmdb=${movie.id}` : '';
 
   return (
     <div className="min-h-screen">
@@ -174,7 +174,7 @@ export default function MovieDetailPage() {
                 <Button onClick={handleTogglePlayer} variant="primary" size="lg" disabled={!canWatch}>
                     <Play className="mr-2 h-5 w-5" /> {playerVisible && canWatch ? "Hide Player" : "Watch on GoDrivePlayer"}
                 </Button>
-                {!canWatch && <p className="text-sm text-muted-foreground">IMDb ID not available, cannot play.</p>}
+                {!canWatch && <p className="text-sm text-muted-foreground">Movie ID not available, cannot play.</p>}
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
                     <DialogTrigger asChild>
@@ -249,3 +249,4 @@ export default function MovieDetailPage() {
     </div>
   );
 }
+
