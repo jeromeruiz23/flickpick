@@ -17,8 +17,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import ContentSlider from '@/components/ContentSlider';
 
-type PlayerSource = 'vidsrc' | '2embed' | null;
-
 export default function TVShowDetailPage() {
   const params = useParams<{ id: string }>();
   const tvShowId = Number(params.id);
@@ -26,7 +24,7 @@ export default function TVShowDetailPage() {
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [activePlayerSource, setActivePlayerSource] = useState<PlayerSource>('vidsrc'); // Default to vidsrc
+  const [playerVisible, setPlayerVisible] = useState(true); // Player visible by default
   const [playerUrl, setPlayerUrl] = useState<string | null>(null);
 
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
@@ -39,7 +37,7 @@ export default function TVShowDetailPage() {
 
   useEffect(() => {
     async function fetchShow() {
-      if (!tvShowId || isNaN(tvShowId)) {
+      if (!tvShowId || isNaN(tvShowId) || tvShowId <= 0) {
         setIsLoading(false);
         setErrorOccurred(true);
         return;
@@ -109,40 +107,21 @@ export default function TVShowDetailPage() {
   }, [selectedSeason, tvShow]);
 
   useEffect(() => {
-    if (activePlayerSource && tvShow && tvShow.id > 0 && selectedSeason !== null && selectedSeason > 0 && selectedEpisode !== null && selectedEpisode > 0) {
-      let url = '';
-      if (activePlayerSource === 'vidsrc') {
-        url = `https://vidsrc.to/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}`;
-      } else if (activePlayerSource === '2embed') {
-        url = `https://www.2embed.cc/embed/tmdb/tv?id=${tvShow.id}&s=${selectedSeason}&e=${selectedEpisode}`;
-      }
-      setPlayerUrl(url);
+    if (tvShow && tvShow.id > 0 && selectedSeason !== null && selectedSeason > 0 && selectedEpisode !== null && selectedEpisode > 0) {
+      setPlayerUrl(`https://vidsrc.to/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}`);
     } else {
       setPlayerUrl(null);
     }
-  }, [activePlayerSource, tvShow, selectedSeason, selectedEpisode]);
+  }, [tvShow, selectedSeason, selectedEpisode]);
 
 
-  const handleWatchClick = (source: PlayerSource) => {
+  const handleWatchClick = () => {
      if (!canWatch || !tvShow || !tvShow.id || selectedSeason === null || selectedEpisode === null) return;
-
-    let url = '';
-    if (source === 'vidsrc') {
-      url = `https://vidsrc.to/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}`;
-    } else if (source === '2embed') {
-      url = `https://www.2embed.cc/embed/tmdb/tv?id=${tvShow.id}&s=${selectedSeason}&e=${selectedEpisode}`;
-    }
-
-    if (activePlayerSource === source && playerUrl === url) {
-      setActivePlayerSource(null);
-    } else {
-      setActivePlayerSource(source);
-      setPlayerUrl(url); 
-    }
+     setPlayerVisible(!playerVisible);
   };
 
   const closePlayer = () => {
-    setActivePlayerSource(null);
+    setPlayerVisible(false);
   };
 
   if (isLoading) {
@@ -288,20 +267,12 @@ export default function TVShowDetailPage() {
 
               <div className="flex flex-wrap gap-2 items-center">
                 <Button 
-                  onClick={() => handleWatchClick('vidsrc')} 
+                  onClick={handleWatchClick} 
                   variant="primary" 
                   size="lg"
                   disabled={!canWatch}
                 >
-                    <Play className="mr-2 h-5 w-5" /> {activePlayerSource === 'vidsrc' ? "Hide Player" : "Watch on VidSrc.to"}
-                </Button>
-                <Button 
-                  onClick={() => handleWatchClick('2embed')} 
-                  variant="primary" 
-                  size="lg"
-                  disabled={!canWatch}
-                >
-                    <Play className="mr-2 h-5 w-5" /> {activePlayerSource === '2embed' ? "Hide Player" : "Watch on 2Embed"}
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible ? "Hide Player" : "Watch on VidSrc.to"}
                 </Button>
 
                 {trailerKey && (
@@ -335,16 +306,16 @@ export default function TVShowDetailPage() {
               <div
                 className={cn(
                   "transition-all duration-500 ease-in-out overflow-hidden",
-                  activePlayerSource && playerUrl
+                  playerVisible && playerUrl
                     ? "opacity-100 max-h-[70vh] mt-6"
                     : "opacity-0 max-h-0 mt-0"
                 )}
               >
-                {activePlayerSource && playerUrl && (
+                {playerVisible && playerUrl && (
                   <>
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-sm text-muted-foreground">
-                          Playing Season {selectedSeason} Episode {selectedEpisode} on {activePlayerSource === 'vidsrc' ? 'VidSrc.to' : '2Embed'}.
+                          Playing Season {selectedSeason} Episode {selectedEpisode} on VidSrc.to
                         </p>
                          <Button onClick={closePlayer} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
@@ -355,9 +326,9 @@ export default function TVShowDetailPage() {
                         <iframe
                             key={playerUrl} 
                             src={playerUrl}
-                            title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on ${activePlayerSource === 'vidsrc' ? 'VidSrc.to' : '2Embed'}`}
+                            title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.to`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation allow-popups-to-escape-sandbox"
+                            sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
                             referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
                         ></iframe>

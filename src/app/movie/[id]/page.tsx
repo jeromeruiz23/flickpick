@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { getMovieDetails, type Movie, type ContentItem, getMovieRecommendations } from '@/lib/tmdb';
+import { getMovieDetails, type Movie, type ContentItem, getMovieRecommendations, type ExternalIds } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb-utils';
 import { Star, CalendarDays, Clapperboard, Play, X, YoutubeIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -15,8 +15,6 @@ import { cn } from '@/lib/utils';
 import CommentSection from '@/components/CommentSection';
 import ContentSlider from '@/components/ContentSlider';
 
-type PlayerSource = 'vidsrc' | '2embed' | null;
-
 export default function MovieDetailPage() {
   const params = useParams<{ id: string }>();
   const movieId = Number(params.id);
@@ -24,7 +22,7 @@ export default function MovieDetailPage() {
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [activePlayerSource, setActivePlayerSource] = useState<PlayerSource>('vidsrc'); // Default to vidsrc
+  const [playerVisible, setPlayerVisible] = useState(true); // Player visible by default
   const [playerUrl, setPlayerUrl] = useState<string | null>(null);
 
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
@@ -33,7 +31,7 @@ export default function MovieDetailPage() {
 
   useEffect(() => {
     async function fetchMovie() {
-      if (!movieId || isNaN(movieId)) {
+      if (!movieId || isNaN(movieId) || movieId <= 0) {
         setIsLoading(false);
         setErrorOccurred(true);
         return;
@@ -78,43 +76,21 @@ export default function MovieDetailPage() {
   const canWatch = !!movie?.id && movie.id > 0;
 
   useEffect(() => {
-    // Effect to set player URL when movie and activePlayerSource are available
-    if (movie && movie.id && activePlayerSource) {
-      let url = '';
-      if (activePlayerSource === 'vidsrc') {
-        url = `https://vidsrc.to/embed/movie/${movie.id}`;
-      } else if (activePlayerSource === '2embed') {
-         url = `https://www.2embed.cc/embed/tmdb/movie?id=${movie.id}`;
-      }
-      setPlayerUrl(url);
+    if (movie && movie.id && canWatch) {
+      setPlayerUrl(`https://vidsrc.to/embed/movie/${movie.id}`);
     } else {
-      setPlayerUrl(null); // Clear player URL if movie or source is not set
-    }
-  }, [movie, activePlayerSource]);
-
-
-  const handleWatchClick = (source: PlayerSource) => {
-    if (!canWatch || !movie || !movie.id) return;
-
-    let url = '';
-    if (source === 'vidsrc') {
-      url = `https://vidsrc.to/embed/movie/${movie.id}`;
-    } else if (source === '2embed') {
-      url = `https://www.2embed.cc/embed/tmdb/movie?id=${movie.id}`;
-    }
-    
-    if (activePlayerSource === source && playerUrl === url) { 
-      setActivePlayerSource(null); 
       setPlayerUrl(null);
-    } else {
-      setPlayerUrl(url);
-      setActivePlayerSource(source);
     }
+  }, [movie, canWatch]);
+
+
+  const handleWatchClick = () => {
+    if (!canWatch || !movie || !movie.id) return;
+    setPlayerVisible(!playerVisible);
   };
 
   const closePlayer = () => {
-    setActivePlayerSource(null);
-    setPlayerUrl(null);
+    setPlayerVisible(false);
   };
 
   if (isLoading) {
@@ -208,13 +184,10 @@ export default function MovieDetailPage() {
             <div className="mt-8 space-y-4">
               <h3 className="text-lg font-semibold text-foreground mb-2">Available Actions:</h3>
               <div className="flex flex-wrap gap-2 items-center">
-                <Button onClick={() => handleWatchClick('vidsrc')} variant="primary" size="lg" disabled={!canWatch}>
-                    <Play className="mr-2 h-5 w-5" /> {activePlayerSource === 'vidsrc' ? "Hide Player" : "Watch on VidSrc.to"}
+                <Button onClick={handleWatchClick} variant="primary" size="lg" disabled={!canWatch}>
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible ? "Hide Player" : "Watch on VidSrc.to"}
                 </Button>
-                <Button onClick={() => handleWatchClick('2embed')} variant="primary" size="lg" disabled={!canWatch}>
-                    <Play className="mr-2 h-5 w-5" /> {activePlayerSource === '2embed' ? "Hide Player" : "Watch on 2Embed"}
-                </Button>
-
+                
                 {!canWatch && <p className="text-sm text-muted-foreground">TMDB ID not available, cannot play.</p>}
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
@@ -247,16 +220,16 @@ export default function MovieDetailPage() {
               <div
                 className={cn(
                   "transition-all duration-500 ease-in-out overflow-hidden",
-                  activePlayerSource && playerUrl
+                  playerVisible && playerUrl
                     ? "opacity-100 max-h-[70vh] mt-6"
                     : "opacity-0 max-h-0 mt-0"
                 )}
               >
-                {activePlayerSource && playerUrl && (
+                {playerVisible && playerUrl && (
                   <>
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-sm text-muted-foreground">
-                          Playing on: {activePlayerSource === 'vidsrc' ? 'VidSrc.to' : '2Embed'}
+                          Playing on: VidSrc.to
                         </p>
                         <Button onClick={closePlayer} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
@@ -267,9 +240,9 @@ export default function MovieDetailPage() {
                         <iframe
                             key={playerUrl} 
                             src={playerUrl}
-                            title={`Watch ${movie.title} on ${activePlayerSource === 'vidsrc' ? 'VidSrc.to' : '2Embed'}`}
+                            title={`Watch ${movie.title} on VidSrc.to`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation allow-popups-to-escape-sandbox"
+                            sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
                             referrerPolicy="no-referrer-when-downgrade"
                             className="w-full h-full"
                         ></iframe>
