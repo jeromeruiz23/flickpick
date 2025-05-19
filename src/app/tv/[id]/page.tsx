@@ -61,14 +61,12 @@ export default function TVShowDetailPage() {
           const firstRegularSeason = showData.seasons.find(s => s.season_number > 0 && s.episode_count > 0);
           if (firstRegularSeason) {
             setSelectedSeason(firstRegularSeason.season_number);
-            setCurrentSeasonDetails(firstRegularSeason);
-            setSelectedEpisode(1); 
+            // setCurrentSeasonDetails will be set by the other useEffect
+            // setSelectedEpisode will be set by the other useEffect
           } else {
              const anySeasonWithEpisodes = showData.seasons.find(s => s.episode_count > 0);
              if (anySeasonWithEpisodes) {
                 setSelectedSeason(anySeasonWithEpisodes.season_number);
-                setCurrentSeasonDetails(anySeasonWithEpisodes);
-                setSelectedEpisode(1);
              }
           }
         }
@@ -89,7 +87,7 @@ export default function TVShowDetailPage() {
       const seasonDetail = tvShow.seasons?.find(s => s.season_number === selectedSeason);
       setCurrentSeasonDetails(seasonDetail || null);
       if (seasonDetail && seasonDetail.episode_count > 0) {
-        setSelectedEpisode(1);
+        setSelectedEpisode(1); 
       } else {
         setSelectedEpisode(null);
       }
@@ -101,7 +99,7 @@ export default function TVShowDetailPage() {
 
 
   const handleTogglePlayer = () => {
-    if (tvShow?.id) { // Player can be toggled if tvShow ID exists
+     if (tvShow?.id && selectedSeason !== null && selectedEpisode !== null) {
       setPlayerVisible(!playerVisible);
     }
   };
@@ -124,9 +122,10 @@ export default function TVShowDetailPage() {
     );
   }
 
-  const playerUrl = tvShow ? `https://vidsrc.to/embed/tv/${tvShow.id}` : '';
+  const playerUrl = tvShow && selectedSeason !== null && selectedEpisode !== null ? `https://vidsrc.to/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}` : '';
 
   const availableSeasons = tvShow.seasons?.filter(s => s.episode_count > 0) || [];
+  const canWatch = tvShow?.id && selectedSeason !== null && selectedEpisode !== null;
 
   return (
     <div className="min-h-screen">
@@ -252,7 +251,7 @@ export default function TVShowDetailPage() {
                   onClick={handleTogglePlayer} 
                   variant="primary" 
                   size="lg"
-                  disabled={!playerUrl}
+                  disabled={!canWatch}
                 >
                     <Play className="mr-2 h-5 w-5" /> Watch on VidSrc
                 </Button>
@@ -296,7 +295,7 @@ export default function TVShowDetailPage() {
                   <>
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-sm text-muted-foreground">
-                          Playing on VidSrc. Select season/episode in player.
+                          Playing Season {selectedSeason} Episode {selectedEpisode} on VidSrc.
                         </p>
                          <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
@@ -305,8 +304,9 @@ export default function TVShowDetailPage() {
                     </div>
                     <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
                         <iframe
+                            key={playerUrl} // Added key here
                             src={playerUrl}
-                            title={`Watch ${tvShow.name} on VidSrc`}
+                            title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc`}
                             sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             referrerPolicy="no-referrer-when-downgrade"
