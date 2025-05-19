@@ -72,7 +72,9 @@ export default function MovieDetailPage() {
   }, [movieId]);
 
   const handleTogglePlayer = () => {
-    if (movie?.id) { // Check for movie.id now
+    if (movie?.external_ids?.imdb_id) { 
+        setPlayerVisible(!playerVisible);
+    } else if (movie?.id && !movie.external_ids?.imdb_id) { // Fallback for movies if no IMDb ID
         setPlayerVisible(!playerVisible);
     }
   };
@@ -95,8 +97,8 @@ export default function MovieDetailPage() {
     );
   }
 
-  const canWatch = !!movie.id; // Movie ID should always be present if movie is loaded
-  const playerUrl = canWatch ? `https://godriveplayer.com/player.php?tmdb=${movie.id}` : '';
+  const canWatch = !!movie?.external_ids?.imdb_id;
+  const playerUrl = canWatch ? `https://godriveplayer.com/player.php?imdb=${movie.external_ids.imdb_id}` : '';
 
   return (
     <div className="min-h-screen">
@@ -174,7 +176,7 @@ export default function MovieDetailPage() {
                 <Button onClick={handleTogglePlayer} variant="primary" size="lg" disabled={!canWatch}>
                     <Play className="mr-2 h-5 w-5" /> {playerVisible && canWatch ? "Hide Player" : "Watch on GoDrivePlayer"}
                 </Button>
-                {!canWatch && <p className="text-sm text-muted-foreground">Movie ID not available, cannot play.</p>}
+                {!canWatch && <p className="text-sm text-muted-foreground">IMDb ID not available, cannot play.</p>}
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
                     <DialogTrigger asChild>
@@ -249,4 +251,3 @@ export default function MovieDetailPage() {
     </div>
   );
 }
-
