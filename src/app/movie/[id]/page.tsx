@@ -72,9 +72,7 @@ export default function MovieDetailPage() {
   }, [movieId]);
 
   const handleTogglePlayer = () => {
-    if (movie?.external_ids?.imdb_id) { 
-        setPlayerVisible(!playerVisible);
-    } else if (movie?.id && !movie.external_ids?.imdb_id) { // Fallback for movies if no IMDb ID
+    if (movie?.id) { 
         setPlayerVisible(!playerVisible);
     }
   };
@@ -97,8 +95,8 @@ export default function MovieDetailPage() {
     );
   }
 
-  const canWatch = !!movie?.external_ids?.imdb_id;
-  const playerUrl = canWatch ? `https://godriveplayer.com/player.php?imdb=${movie.external_ids.imdb_id}` : '';
+  const canWatch = !!movie?.id;
+  const playerUrl = canWatch ? `https://vidsrc.to/embed/movie/${movie.id}` : '';
 
   return (
     <div className="min-h-screen">
@@ -174,9 +172,9 @@ export default function MovieDetailPage() {
               <h3 className="text-lg font-semibold text-foreground mb-2">Available Actions:</h3>
               <div className="flex flex-wrap gap-2 items-center">
                 <Button onClick={handleTogglePlayer} variant="primary" size="lg" disabled={!canWatch}>
-                    <Play className="mr-2 h-5 w-5" /> {playerVisible && canWatch ? "Hide Player" : "Watch on GoDrivePlayer"}
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible && canWatch ? "Hide Player" : "Watch on VidSrc.to"}
                 </Button>
-                {!canWatch && <p className="text-sm text-muted-foreground">IMDb ID not available, cannot play.</p>}
+                {!canWatch && <p className="text-sm text-muted-foreground">TMDB ID not available, cannot play.</p>}
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
                     <DialogTrigger asChild>
@@ -216,7 +214,7 @@ export default function MovieDetailPage() {
                 {playerVisible && canWatch && playerUrl && (
                   <>
                     <div className="flex justify-between items-center mb-2">
-                        <p className="text-sm text-muted-foreground">Playing on: GoDrivePlayer</p>
+                        <p className="text-sm text-muted-foreground">Playing on: VidSrc.to</p>
                         <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
                             <span className="sr-only">Close Player</span>
@@ -226,7 +224,7 @@ export default function MovieDetailPage() {
                         <iframe
                             key={playerUrl}
                             src={playerUrl}
-                            title={`Watch ${movie.title} on GoDrivePlayer`}
+                            title={`Watch ${movie.title} on VidSrc.to`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
                             referrerPolicy="no-referrer-when-downgrade"

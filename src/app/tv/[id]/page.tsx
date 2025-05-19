@@ -130,7 +130,7 @@ export default function TVShowDetailPage() {
   }
   
   const canWatch = tvShow?.id && selectedSeason !== null && selectedEpisode !== null;
-  const playerUrl = canWatch ? `https://godriveplayer.com/player.php?type=series&tmdb=${tvShow.id}&season=${selectedSeason}&episode=${selectedEpisode}` : '';
+  const playerUrl = canWatch ? `https://vidsrc.to/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}` : '';
 
   const availableSeasons = tvShow.seasons?.filter(s => s.episode_count > 0) || [];
 
@@ -261,7 +261,7 @@ export default function TVShowDetailPage() {
                   size="lg"
                   disabled={!canWatch}
                 >
-                    <Play className="mr-2 h-5 w-5" /> {playerVisible && canWatch ? "Hide Player" : "Watch on GoDrivePlayer"}
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible && canWatch ? "Hide Player" : "Watch on VidSrc.to"}
                 </Button>
                 {trailerKey && (
                   <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
@@ -303,7 +303,7 @@ export default function TVShowDetailPage() {
                   <>
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-sm text-muted-foreground">
-                          Playing Season {selectedSeason} Episode {selectedEpisode} on GoDrivePlayer.
+                          Playing Season {selectedSeason} Episode {selectedEpisode} on VidSrc.to.
                         </p>
                          <Button onClick={() => setPlayerVisible(false)} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
@@ -314,7 +314,7 @@ export default function TVShowDetailPage() {
                         <iframe
                             key={playerUrl} 
                             src={playerUrl}
-                            title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on GoDrivePlayer`}
+                            title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.to`}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
                             referrerPolicy="no-referrer-when-downgrade"
@@ -366,4 +366,3 @@ export default function TVShowDetailPage() {
     </div>
   );
 }
-
