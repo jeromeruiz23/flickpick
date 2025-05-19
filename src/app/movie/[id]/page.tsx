@@ -6,9 +6,10 @@ import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { getMovieDetails, type Movie } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb-utils';
-import { Star, CalendarDays, Clapperboard, Play, X } from 'lucide-react';
+import { Star, CalendarDays, Clapperboard, Play, X, YoutubeIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +19,8 @@ export default function MovieDetailPage() {
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [playerVisible, setPlayerVisible] = useState(false);
+  const [trailerKey, setTrailerKey] = useState<string | null>(null);
+  const [showTrailerModal, setShowTrailerModal] = useState(false);
 
   useEffect(() => {
     async function fetchMovie() {
@@ -30,6 +33,23 @@ export default function MovieDetailPage() {
         setIsLoading(true);
         const movieData = await getMovieDetails(Number(params.id));
         setMovie(movieData);
+
+        if (movieData.videos && movieData.videos.results.length > 0) {
+          const officialTrailer = movieData.videos.results.find(
+            video => video.site === 'YouTube' && video.type === 'Trailer' && video.official
+          );
+          if (officialTrailer) {
+            setTrailerKey(officialTrailer.key);
+          } else {
+            // Fallback to any YouTube trailer if no official one is found
+            const anyTrailer = movieData.videos.results.find(
+              video => video.site === 'YouTube' && video.type === 'Trailer'
+            );
+            if (anyTrailer) {
+              setTrailerKey(anyTrailer.key);
+            }
+          }
+        }
         setErrorOccurred(false);
       } catch (error) {
         console.error(`Failed to load movie details for ID ${params.id}:`, error);
@@ -135,11 +155,39 @@ export default function MovieDetailPage() {
               <p className="text-foreground/80 leading-relaxed whitespace-pre-wrap">{movie.overview}</p>
             </div>
 
-            <div className="mt-8 space-y-4">
-              <h3 className="text-lg font-semibold text-foreground">Watch Now:</h3>
-              <Button onClick={handleTogglePlayer} variant="primary" size="lg">
-                  <Play className="mr-2 h-5 w-5" /> Watch on VidSrc
-              </Button>
+            <div className="mt-8 space-x-2 space-y-4">
+              <h3 className="text-lg font-semibold text-foreground">Available Actions:</h3>
+              <div className="flex flex-wrap gap-2 items-center">
+                <Button onClick={handleTogglePlayer} variant="primary" size="lg">
+                    <Play className="mr-2 h-5 w-5" /> Watch on VidSrc
+                </Button>
+                {trailerKey && (
+                  <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="lg">
+                        <YoutubeIcon className="mr-2 h-5 w-5" /> Watch Trailer
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl p-0">
+                      <DialogHeader className="sr-only">
+                        <DialogTitle>{movie.title} Trailer</DialogTitle>
+                      </DialogHeader>
+                      <div className="aspect-video">
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
+                          title="YouTube video player"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          className="rounded-md"
+                        ></iframe>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
 
               <div
                 className={cn(

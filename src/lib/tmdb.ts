@@ -3,13 +3,29 @@
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-// TMDB_IMAGE_BASE_URL moved to tmdb-utils.ts
 
 // Ensure this is set in your .env file
 if (!TMDB_API_KEY) {
   console.warn(
     "Warning: TMDB_API_KEY environment variable is not set. Please ensure it's defined in your .env file and the server has been restarted. Some features may not work."
   );
+}
+
+interface VideoResult {
+  id: string;
+  iso_639_1: string;
+  iso_3166_1: string;
+  key: string; // YouTube key
+  name: string;
+  official: boolean;
+  published_at: string;
+  site: string; // e.g., "YouTube"
+  size: number;
+  type: string; // e.g., "Trailer", "Teaser"
+}
+
+interface MediaVideos {
+  results: VideoResult[];
 }
 
 export interface Movie {
@@ -25,8 +41,9 @@ export interface Movie {
   popularity: number;
   genres?: { id: number; name: string }[];
   media_type?: 'movie';
-  tagline?: string; // Added for movie details
-  runtime?: number; // Added for movie details
+  tagline?: string;
+  runtime?: number;
+  videos?: MediaVideos; // Added for trailers
 }
 
 export interface TVShow {
@@ -42,8 +59,8 @@ export interface TVShow {
   popularity: number;
   genres?: { id: number; name: string }[];
   media_type?: 'tv';
-  tagline?: string; // Added for TV show details
-  number_of_seasons?: number; // Added for TV show details
+  tagline?: string;
+  number_of_seasons?: number;
   seasons?: {
     id: number;
     name: string;
@@ -51,7 +68,8 @@ export interface TVShow {
     season_number: number;
     episode_count: number;
     air_date: string | null;
-  }[]; // Added for TV show details
+  }[];
+  videos?: MediaVideos; // Added for trailers
 }
 
 export type ContentItem = Movie | TVShow;
@@ -97,8 +115,6 @@ async function fetchTMDB<T>(endpoint: string, params: Record<string, string> = {
   }
 }
 
-// getImageUrl moved to tmdb-utils.ts
-
 export async function getPopularMovies(page: number = 1): Promise<TMDBListResponse<Movie>> {
   const data = await fetchTMDB<TMDBListResponse<Movie>>('movie/popular', { page: page.toString() });
   return {
@@ -136,11 +152,11 @@ export async function searchContent(query: string, page: number = 1): Promise<TM
 }
 
 export async function getMovieDetails(id: number): Promise<Movie> {
-  const movie = await fetchTMDB<Movie>(`movie/${id}`);
+  const movie = await fetchTMDB<Movie>(`movie/${id}?append_to_response=videos`);
   return { ...movie, media_type: 'movie' };
 }
 
 export async function getTVShowDetails(id: number): Promise<TVShow> {
-  const tvShow = await fetchTMDB<TVShow>(`tv/${id}?append_to_response=seasons`);
+  const tvShow = await fetchTMDB<TVShow>(`tv/${id}?append_to_response=videos,seasons`);
   return { ...tvShow, media_type: 'tv' };
 }
