@@ -1,5 +1,5 @@
 
-import { getPopularMovies, getPopularTVShows, getTrendingAllWeek, type ContentItem } from '@/lib/tmdb';
+import { getPopularMovies, getPopularTVShows, getTrendingAllWeek, type ContentItem, getMovieDetails, getTVShowDetails } from '@/lib/tmdb';
 import ContentGrid from '@/components/ContentGrid';
 import HeroSection from '@/components/HeroSection';
 import ContentSlider from '@/components/ContentSlider';
@@ -21,9 +21,35 @@ export default async function HomePage() {
     trendingItems = trendingData.results;
 
     if (trendingItems.length > 0) {
-      heroItemsList = trendingItems.slice(0, 5); // Use top 5 trending items for hero banner
+      const topTrendingItemsBase = trendingItems.slice(0, 5); // Use top 5 trending items for hero banner
+      // Fetch full details for hero items to get video data
+      const heroItemsPromises = topTrendingItemsBase.map(async (item) => {
+        try {
+          if (item.media_type === 'movie' && item.id) {
+            return await getMovieDetails(item.id);
+          } else if (item.media_type === 'tv' && item.id) {
+            return await getTVShowDetails(item.id);
+          }
+        } catch (detailError) {
+          console.error(`Failed to fetch details for hero item ${item.id} (${item.media_type}):`, detailError);
+          // Return the base item if details fetch fails, so it can still display an image
+          return item;
+        }
+        return item; // Fallback for items without a known media_type or ID (shouldn't happen with TMDB)
+      });
+      heroItemsList = (await Promise.all(heroItemsPromises)).filter(item => item !== null) as ContentItem[];
+
     } else if (popularMovies.length > 0) {
-      heroItemsList = popularMovies.slice(0,1); // Fallback to first popular movie if no trending
+       // Fallback to first popular movie if no trending, fetch its details too
+      const firstPopularMovie = popularMovies[0];
+      if (firstPopularMovie && firstPopularMovie.id) {
+        try {
+            heroItemsList = [await getMovieDetails(firstPopularMovie.id)];
+        } catch (detailError) {
+            console.error(`Failed to fetch details for fallback hero item ${firstPopularMovie.id}:`, detailError);
+            heroItemsList = [firstPopularMovie]; // Use base item on error
+        }
+      }
     }
 
   } catch (error) {

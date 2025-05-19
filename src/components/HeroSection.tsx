@@ -14,17 +14,45 @@ interface HeroSectionProps {
   items: ContentItem[];
 }
 
-const TRANSITION_DURATION_MS = 500; // Consistent transition duration
-const AUTO_PLAY_INTERVAL_MS = 7000;
+const TRANSITION_DURATION_MS = 500;
+const AUTO_PLAY_INTERVAL_MS = 15000; // Increased interval to allow trailers to play longer
 
 export default function HeroSection({ items }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFading, setIsFading] = useState(false);
+  const [currentTrailerKey, setCurrentTrailerKey] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const currentItem = items && items.length > 0 ? items[currentIndex] : null;
+
+  const findTrailer = useCallback((item: ContentItem | null) => {
+    if (!item || !item.videos || !item.videos.results || item.videos.results.length === 0) {
+      return null;
+    }
+    const officialTrailer = item.videos.results.find(
+      (video) => video.site === 'YouTube' && video.type === 'Trailer' && video.official
+    );
+    if (officialTrailer) return officialTrailer.key;
+
+    const anyTrailer = item.videos.results.find(
+      (video) => video.site === 'YouTube' && video.type === 'Trailer'
+    );
+    return anyTrailer ? anyTrailer.key : null;
+  }, []);
+
+  useEffect(() => {
+    if (currentItem) {
+      const trailer = findTrailer(currentItem);
+      setCurrentTrailerKey(trailer);
+    } else {
+      setCurrentTrailerKey(null);
+    }
+  }, [currentIndex, items, currentItem, findTrailer]);
+
 
   const advanceSlide = useCallback((direction: 'next' | 'prev') => {
     if (!items || items.length <= 1) return;
-    setIsFading(true); // Start fade-out
+    setIsFading(true);
     setTimeout(() => {
       setCurrentIndex((prevIndex) => {
         if (direction === 'next') {
@@ -33,8 +61,8 @@ export default function HeroSection({ items }: HeroSectionProps) {
           return (prevIndex - 1 + items.length) % items.length;
         }
       });
-      setIsFading(false); // Start fade-in of new content
-    }, TRANSITION_DURATION_MS); // Wait for fade-out to complete before changing content and starting fade-in
+      setIsFading(false); 
+    }, TRANSITION_DURATION_MS);
   }, [items]);
 
   const resetTimer = useCallback(() => {
@@ -55,7 +83,7 @@ export default function HeroSection({ items }: HeroSectionProps) {
         clearInterval(timerRef.current);
       }
     };
-  }, [items, currentIndex, resetTimer]);
+  }, [items, currentIndex, resetTimer, currentTrailerKey]); // Added currentTrailerKey to dependencies
 
   const handlePrev = () => {
     advanceSlide('prev');
@@ -67,7 +95,7 @@ export default function HeroSection({ items }: HeroSectionProps) {
     resetTimer();
   };
 
-  if (!items || items.length === 0) {
+  if (!currentItem) {
     return (
       <section className="relative h-[60vh] md:h-[70vh] lg:h-[80vh] w-full mb-12 rounded-lg overflow-hidden shadow-xl bg-muted flex items-center justify-center">
         <p className="text-muted-foreground text-xl">No featured content available.</p>
@@ -75,28 +103,42 @@ export default function HeroSection({ items }: HeroSectionProps) {
     );
   }
 
-  const currentItem = items[currentIndex];
   const title = 'title' in currentItem ? currentItem.title : currentItem.name;
   const itemType = 'title' in currentItem ? 'movie' : 'tv';
   const detailUrl = `/${itemType}/${currentItem.id}`;
+  const youtubeEmbedParams = `?autoplay=1&mute=1&controls=0&showinfo=0&modestbranding=1&loop=1&playlist=${currentTrailerKey}&iv_load_policy=3&rel=0`;
 
   return (
     <section className="relative h-[60vh] md:h-[70vh] lg:h-[80vh] w-full mb-12 rounded-lg overflow-hidden shadow-xl group">
-      {currentItem.backdrop_path && (
-        <Image
-          key={currentItem.id} 
-          src={getImageUrl(currentItem.backdrop_path, 'original')}
-          alt={`Backdrop for ${title}`}
-          fill
-          className={cn(
-            "object-cover object-center transition-opacity ease-in-out",
-            `duration-[${TRANSITION_DURATION_MS}ms]`,
-            isFading ? "opacity-0" : "opacity-100"
-          )}
-          priority={currentIndex === 0} 
-          data-ai-hint="movie scene"
-        />
-      )}
+      <div className={cn(
+          "absolute inset-0 transition-opacity ease-in-out",
+          `duration-[${TRANSITION_DURATION_MS}ms]`,
+          isFading ? "opacity-0" : "opacity-100"
+        )}>
+        {currentTrailerKey ? (
+          <iframe
+            key={currentItem.id + '-trailer'}
+            src={`https://www.youtube.com/embed/${currentTrailerKey}${youtubeEmbedParams}`}
+            title={`${title} Trailer`}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            className="w-full h-full object-cover"
+          ></iframe>
+        ) : (
+          currentItem.backdrop_path && (
+            <Image
+              key={currentItem.id + '-image'}
+              src={getImageUrl(currentItem.backdrop_path, 'original')}
+              alt={`Backdrop for ${title}`}
+              fill
+              className="object-cover object-center"
+              priority={currentIndex === 0}
+              data-ai-hint="movie scene"
+            />
+          )
+        )}
+      </div>
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
       
       {items.length > 1 && (
