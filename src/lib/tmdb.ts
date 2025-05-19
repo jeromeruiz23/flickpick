@@ -63,17 +63,28 @@ interface TMDBListResponse<T> {
 
 async function fetchTMDB<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
   if (!TMDB_API_KEY) {
-    throw new Error("TMDB_API_KEY is not configured. Please ensure it is set in your .env file and that you have restarted your development server.");
+    throw new Error("TMDB_API_KEY is not configured. Please ensure it is set in your .env file and that you have restarted your development server. It appears to be missing, which will prevent TMDB API calls from working.");
   }
+  
+  // For v4 access tokens (JWTs), we use the Authorization header.
+  // For v3 API keys, they are passed as an 'api_key' query parameter.
+  // The provided key is a JWT, so we assume v4.
+  const headers: HeadersInit = {
+    'Authorization': `Bearer ${TMDB_API_KEY}`,
+    'Accept': 'application/json',
+  };
+
   const urlParams = new URLSearchParams({
-    api_key: TMDB_API_KEY,
     language: 'en-US',
     ...params,
   });
   const url = `${TMDB_BASE_URL}/${endpoint}?${urlParams.toString()}`;
   
   try {
-    const response = await fetch(url, { next: { revalidate: 3600 } }); // Revalidate data every hour
+    const response = await fetch(url, { 
+      headers,
+      next: { revalidate: 3600 } // Revalidate data every hour
+    }); 
     if (!response.ok) {
       console.error(`Error fetching ${url}: ${response.status} ${response.statusText}`);
       const errorBody = await response.text();
