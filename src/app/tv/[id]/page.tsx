@@ -55,7 +55,7 @@ export default function TVShowDetailPage() {
     );
   }
 
-  const vidsrcUrl = `https://vidsrc.to/embed/tv/${tvShow.id}`;
+  const playerUrl = `https://www.2embed.cc/embed/tmdb/tv?id=${tvShow.id}`;
 
   return (
     <div className="min-h-screen">
@@ -132,12 +132,12 @@ export default function TVShowDetailPage() {
 
             <div className="mt-8">
               <Button onClick={() => setShowPlayer(!showPlayer)} variant="primary" size="lg" className="w-full md:w-auto">
-                  <Play className="mr-2 h-5 w-5" /> {showPlayer ? 'Hide Player' : 'Watch Now on VidSrc'}
+                  <Play className="mr-2 h-5 w-5" /> {showPlayer ? 'Hide Player' : 'Watch Now on 2Embed'}
               </Button>
               {showPlayer && (
                   <div className="mt-6 aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
                       <iframe
-                          src={vidsrcUrl}
+                          src={playerUrl}
                           title={`Watch ${tvShow.name}`}
                           allowFullScreen
                           className="w-full h-full"
