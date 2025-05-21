@@ -1,6 +1,8 @@
 
+'use client';
+
 import Link from 'next/link';
-import { Film, Search, Sparkles, ChevronDown } from 'lucide-react';
+import { Film, Search, Sparkles, ChevronDown, Menu } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import {
   DropdownMenu,
@@ -11,7 +13,15 @@ import {
 import { Button } from "@/components/ui/button";
 import React, { Suspense } from 'react';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from "@/components/ui/scroll-area"; // Added import
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
 
 const genres = [
   { name: "Action", query: "Action" },
@@ -67,7 +77,9 @@ export default function Header() {
           <Film size={32} />
           <span className="text-2xl font-bold">FlickPick</span>
         </Link>
+        
         <div className="flex items-center space-x-2 md:space-x-4">
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1 sm:space-x-2 lg:space-x-4">
             <Button variant="link" asChild className="text-foreground hover:text-primary transition-colors px-2 lg:px-3">
               <Link href="/">Home</Link>
@@ -104,7 +116,6 @@ export default function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="bg-popover text-popover-foreground w-56">
                 <ScrollArea className="h-72">
-                  {/* Default p-1 from DropdownMenuContent will apply around this ScrollArea */}
                   {categories.sort((a, b) => a.name.localeCompare(b.name)).map((category) => (
                     <DropdownMenuItem key={category.name} asChild>
                       <Link href={`/search?q=${encodeURIComponent(category.query)}`} className="hover:bg-accent hover:text-accent-foreground">
@@ -123,10 +134,76 @@ export default function Header() {
               </Link>
             </Button>
           </nav>
+
           <Suspense fallback={<SearchBarFallback />}>
             <SearchBar />
           </Suspense>
-          {/* Mobile Menu Trigger (optional, for future enhancement for smaller screens) */}
+
+          {/* Mobile Menu Trigger */}
+          <div className="md:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="ml-2">
+                  <Menu className="h-6 w-6" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[280px] sm:w-[320px] bg-background p-0">
+                <SheetHeader className="p-4 border-b border-border">
+                  <SheetTitle>
+                    <SheetClose asChild>
+                      <Link href="/" className="flex items-center space-x-2 text-primary hover:opacity-80 transition-opacity">
+                        <Film size={28} />
+                        <span className="text-xl font-bold">FlickPick</span>
+                      </Link>
+                    </SheetClose>
+                  </SheetTitle>
+                </SheetHeader>
+                <ScrollArea className="h-[calc(100vh-65px)]"> {/* Adjust height based on header */}
+                  <nav className="flex flex-col space-y-2 p-4">
+                    <SheetClose asChild>
+                      <Link href="/" className="block px-3 py-2 text-base rounded-md hover:bg-accent hover:text-primary">Home</Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link href="/movies" className="block px-3 py-2 text-base rounded-md hover:bg-accent hover:text-primary">Movies</Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link href="/tv-shows" className="block px-3 py-2 text-base rounded-md hover:bg-accent hover:text-primary">TV Shows</Link>
+                    </SheetClose>
+
+                    <div className="pt-2">
+                      <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Genres</p>
+                      {genres.map((genre) => (
+                        <SheetClose asChild key={`mobile-${genre.name}`}>
+                          <Link href={`/search?q=${encodeURIComponent(genre.query)}`} className="block px-3 py-2 text-base rounded-md hover:bg-accent hover:text-primary">
+                            {genre.name}
+                          </Link>
+                        </SheetClose>
+                      ))}
+                    </div>
+
+                    <div className="pt-2">
+                      <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Categories</p>
+                      {categories.sort((a, b) => a.name.localeCompare(b.name)).map((category) => (
+                        <SheetClose asChild key={`mobile-${category.name}`}>
+                          <Link href={`/search?q=${encodeURIComponent(category.query)}`} className="block px-3 py-2 text-base rounded-md hover:bg-accent hover:text-primary">
+                            {category.name}
+                          </Link>
+                        </SheetClose>
+                      ))}
+                    </div>
+                    
+                    <SheetClose asChild>
+                      <Link href="/recommendations" className="flex items-center px-3 py-2 text-base rounded-md hover:bg-accent hover:text-primary">
+                        <Sparkles size={18} className="mr-2" />
+                        Recommendations
+                      </Link>
+                    </SheetClose>
+                  </nav>
+                </ScrollArea>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>
