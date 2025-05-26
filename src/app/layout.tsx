@@ -30,6 +30,8 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <head>
         <meta name="referrer" content="strict-origin-when-cross-origin" />
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8352459973412570"
+     crossOrigin="anonymous"></script>
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
         <Header />
