@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: [YOUR_FULL_SITEMAP_URL_HERE] # Optional: Add your sitemap URL if you have one

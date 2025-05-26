@@ -17,8 +17,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'FlickPick - Your Next Movie Adventure',
-  description: 'Browse, search, and get personalized movie and TV show recommendations.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'), // Change to your production URL
+  title: 'FlickPick - Your Next Movie & TV Show Adventure!',
+  description: 'Browse, search, and get personalized movie and TV show recommendations. Discover trending content, watch trailers, and find your next favorite flick.',
+  keywords: ['movies', 'tv shows', 'recommendations', 'streaming', 'trailers', 'FlickPick', 'cinema', 'entertainment'],
+  openGraph: {
+    title: 'FlickPick - Your Next Movie & TV Show Adventure!',
+    description: 'Discover your next favorite movie or TV show with FlickPick.',
+    // Add a site logo URL here if you have one
+    // images: ['/og-image.png'], 
+  },
+  // Add other metadata like twitter cards if desired
 };
 
 export default function RootLayout({
