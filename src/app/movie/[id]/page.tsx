@@ -184,7 +184,13 @@ export default function MovieDetailPage() {
             <div className="mt-8 space-y-4">
               <h3 className="text-lg font-semibold text-foreground mb-2">Available Actions:</h3>
               <div className="flex flex-wrap gap-2 items-center">
-                <Button onClick={handleWatchClick} variant="primary" size="lg" disabled={!canWatch}>
+                <Button 
+                  onClick={handleWatchClick} 
+                  variant="primary" 
+                  size="lg" 
+                  disabled={!canWatch}
+                  aria-label={playerVisible && playerUrl ? `Hide the VidSrc.icu player for ${movie.title}` : `Watch ${movie.title} on VidSrc.icu`}
+                >
                     <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.icu"}
                 </Button>
                 
@@ -242,10 +248,9 @@ export default function MovieDetailPage() {
                             src={playerUrl}
                             title={`Watch ${movie.title} on VidSrc.icu`}
                             className="w-full h-full"
-                            allowFullScreen
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                            allowFullScreen
                             referrerPolicy="no-referrer-when-downgrade"
-                            sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
                         ></iframe>
                     </div>
                   </>

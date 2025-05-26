@@ -271,6 +271,7 @@ export default function TVShowDetailPage() {
                   variant="primary" 
                   size="lg"
                   disabled={!canWatch}
+                  aria-label={playerVisible && playerUrl ? `Hide the VidSrc.icu player for ${tvShow.name} S${selectedSeason}E${selectedEpisode}` : `Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.icu`}
                 >
                     <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.icu"}
                 </Button>
@@ -328,10 +329,9 @@ export default function TVShowDetailPage() {
                             src={playerUrl}
                             title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.icu`}
                             className="w-full h-full"
-                            allowFullScreen
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                            allowFullScreen
                             referrerPolicy="no-referrer-when-downgrade"
-                            sandbox="allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
                         ></iframe>
                     </div>
                   </>
