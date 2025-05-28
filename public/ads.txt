@@ -1,3 +1,1 @@
-# Please add your AdSense publisher information here.
-# Example line:
-# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+google.com, pub-8352459973412570, DIRECT, f08c47fec0942fa0
