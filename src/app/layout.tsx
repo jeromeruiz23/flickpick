@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'), // Change to your production URL
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'),
   title: 'FlickPick - Your Next Movie & TV Show Adventure!',
   description: 'Browse, search, and get personalized movie and TV show recommendations. Discover trending content, watch trailers, and find your next favorite flick.',
   keywords: ['movies', 'tv shows', 'recommendations', 'streaming', 'trailers', 'FlickPick', 'cinema', 'entertainment'],
@@ -41,6 +41,7 @@ export default function RootLayout({
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8352459973412570"
      crossOrigin="anonymous"></script>
+        <meta name="google-adsense-account" content="ca-pub-8352459973412570" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
         <Header />
