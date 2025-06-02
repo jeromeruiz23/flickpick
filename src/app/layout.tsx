@@ -1,6 +1,7 @@
 
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import Script from 'next/script'; // Import the Script component
 import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -50,6 +51,24 @@ export default function RootLayout({
         </main>
         <Footer />
         <Toaster />
+        
+        {/* Added highperformanceformat.com scripts */}
+        <Script id="highperformanceformat-options" strategy="beforeInteractive">
+          {`
+            atOptions = {
+              'key' : 'acc8252bf86645ad2a55e77225f49ddb',
+              'format' : 'iframe',
+              'height' : 90,
+              'width' : 728,
+              'params' : {}
+            };
+          `}
+        </Script>
+        <Script
+          id="highperformanceformat-invoke"
+          src="//www.highperformanceformat.com/acc8252bf86645ad2a55e77225f49ddb/invoke.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
