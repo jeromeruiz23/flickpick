@@ -1,4 +1,3 @@
-
 import { searchContent, type ContentItem } from '@/lib/tmdb';
 import ContentGrid from '@/components/ContentGrid';
 import { Suspense } from 'react';
@@ -8,7 +7,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 interface SearchPageProps {
-  searchParams: { q?: string; page?: string };
+  searchParams: Promise<{ q?: string; page?: string }>;
 }
 
 async function SearchResults({ query, currentPage }: { query: string; currentPage: number }) {
@@ -31,7 +30,7 @@ async function SearchResults({ query, currentPage }: { query: string; currentPag
     return (
       <div className="text-center py-10">
         <h2 className="text-2xl font-semibold mb-4">Search Error</h2>
-        <p className="text-muted-foreground">Could not perform search. Please try again later.</p>
+        <p className="text-muted-foreground">Could not perform search. Please check your API configuration.</p>
       </div>
     );
   }
@@ -60,13 +59,11 @@ async function SearchResults({ query, currentPage }: { query: string; currentPag
           <Link
             href={`/search?q=${encodeURIComponent(query)}&page=${currentPage - 1}`}
             passHref
-            legacyBehavior
           >
             <Button
               variant="outline"
               disabled={currentPage <= 1}
               className={cn(currentPage <= 1 && "opacity-50 cursor-not-allowed")}
-              aria-label="Previous page"
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
               Previous
@@ -78,13 +75,11 @@ async function SearchResults({ query, currentPage }: { query: string; currentPag
           <Link
             href={`/search?q=${encodeURIComponent(query)}&page=${currentPage + 1}`}
             passHref
-            legacyBehavior
           >
             <Button
               variant="outline"
               disabled={currentPage >= totalPages}
               className={cn(currentPage >= totalPages && "opacity-50 cursor-not-allowed")}
-              aria-label="Next page"
             >
               Next
               <ChevronRight className="ml-2 h-4 w-4" />
@@ -96,9 +91,10 @@ async function SearchResults({ query, currentPage }: { query: string; currentPag
   );
 }
 
-export default function SearchPage({ searchParams }: SearchPageProps) {
-  const query = searchParams.q || '';
-  const currentPage = Number(searchParams.page) || 1;
+export default async function SearchPage({ searchParams }: SearchPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const query = resolvedSearchParams.q || '';
+  const currentPage = Number(resolvedSearchParams.page) || 1;
 
   return (
     <div>
@@ -121,11 +117,6 @@ function SearchPageLoading({ query }: { query: string}) {
         <p className="text-muted-foreground text-lg">Searching for "{query}"...</p> : 
         <p className="text-muted-foreground text-lg">Loading search...</p>
       }
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 mt-8 w-full">
-        {Array.from({ length: 12 }).map((_, index) => (
-          <div key={index} className="aspect-[2/3] bg-muted rounded-md animate-pulse"></div>
-        ))}
-      </div>
     </div>
   );
 }

@@ -21,7 +21,7 @@ export default function MovieDetailPage() {
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [playerVisible, setPlayerVisible] = useState(true); 
+  const [playerVisible, setPlayerVisible] = useState(false); 
   const [playerUrl, setPlayerUrl] = useState<string | null>(null);
 
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
@@ -30,238 +30,131 @@ export default function MovieDetailPage() {
 
   useEffect(() => {
     async function fetchMovie() {
-      if (!movieId || isNaN(movieId) || movieId <= 0) {
-        setIsLoading(false);
-        setErrorOccurred(true);
-        return;
-      }
+      if (!movieId) return;
       try {
         setIsLoading(true);
         const movieData = await getMovieDetails(movieId);
         setMovie(movieData);
 
-        if (movieData.videos && movieData.videos.results.length > 0) {
-          const officialTrailer = movieData.videos.results.find(
-            video => video.site === 'YouTube' && video.type === 'Trailer' && video.official
+        if (movieData.videos?.results) {
+          const trailer = movieData.videos.results.find(
+            v => v.site === 'YouTube' && v.type === 'Trailer'
           );
-          if (officialTrailer) {
-            setTrailerKey(officialTrailer.key);
-          } else {
-            const anyTrailer = movieData.videos.results.find(
-              video => video.site === 'YouTube' && video.type === 'Trailer'
-            );
-            if (anyTrailer) {
-              setTrailerKey(anyTrailer.key);
-            }
-          }
+          if (trailer) setTrailerKey(trailer.key);
         }
-        setErrorOccurred(false);
 
         const recommendationsData = await getMovieRecommendations(movieId);
         setRecommendations(recommendationsData.results);
-
       } catch (error) {
-        console.error(`Failed to load movie details for ID ${movieId}:`, error);
+        console.error("Error loading movie:", error);
         setErrorOccurred(true);
-        setMovie(null);
-        setRecommendations([]);
       } finally {
         setIsLoading(false);
       }
     }
     fetchMovie();
   }, [movieId]);
-  
-  const canWatch = !!movie && !!movie.id && movie.id > 0;
 
   useEffect(() => {
-    if (canWatch && movie) {
+    if (movie?.id) {
       setPlayerUrl(`https://vidsrc.sbs/embed/movie/${movie.id}?autoplay=1&color=e50914&sub=en&t=120&controls=0`);
-    } else {
-      setPlayerUrl(null);
     }
-  }, [movie, canWatch]);
+  }, [movie]);
 
-
-  const handleWatchClick = () => {
-    if (!canWatch) return;
-    setPlayerVisible(!playerVisible);
-  };
-
-  const closePlayer = () => {
-    setPlayerVisible(false);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
-        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground text-lg">Loading movie details...</p>
-      </div>
-    );
-  }
-
-  if (errorOccurred || !movie) {
-    return (
-      <div className="text-center py-10">
-        <h1 className="text-3xl font-bold mb-4">Movie Not Found</h1>
-        <p className="text-muted-foreground">The details for this movie could not be loaded. It might not exist or there was a network issue.</p>
-      </div>
-    );
-  }
+  if (isLoading) return <div className="flex justify-center items-center min-h-screen"><Loader2 className="animate-spin h-12 w-12 text-primary" /></div>;
+  if (errorOccurred || !movie) return <div className="text-center py-20"><h1 className="text-2xl font-bold">Movie not found</h1></div>;
 
   return (
     <div className="min-h-screen">
       {movie.backdrop_path && (
-        <div className="relative h-[40vh] md:h-[50vh] w-full -mx-4 -mt-8 md:-mx-0 md:-mt-0 md:rounded-lg overflow-hidden">
+        <div className="relative h-[40vh] md:h-[60vh] w-full">
           <Image
             src={getImageUrl(movie.backdrop_path, 'original')}
-            alt={`Backdrop for ${movie.title}`}
+            alt={movie.title}
             fill
-            sizes="100vw"
-            className="object-cover object-center"
+            className="object-cover"
             priority
-            data-ai-hint="movie scene"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
         </div>
       )}
 
-      <div className="container mx-auto px-4 py-8 relative -mt-24 md:-mt-32">
-        <div className="md:flex md:space-x-8 items-start">
-          <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0 mb-6 md:mb-0">
+      <div className="container mx-auto px-4 -mt-32 relative z-10 pb-12">
+        <div className="flex flex-col md:flex-row gap-8">
+          <div className="w-64 flex-shrink-0 mx-auto md:mx-0">
             <div className="aspect-[2/3] relative rounded-lg overflow-hidden shadow-2xl">
               <Image
                 src={getImageUrl(movie.poster_path, 'w500')}
                 alt={movie.title}
                 fill
-                sizes="(max-width: 768px) 100vw, 33vw"
                 className="object-cover"
-                data-ai-hint="movie poster"
               />
             </div>
           </div>
 
-          <div className="md:w-2/3 lg:w-3/4">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2">{movie.title}</h1>
-            {movie.tagline && <p className="text-lg text-muted-foreground italic mb-4">{movie.tagline}</p>}
+          <div className="flex-grow">
+            <h1 className="text-4xl md:text-5xl font-bold mb-2">{movie.title}</h1>
+            {movie.tagline && <p className="text-xl text-muted-foreground italic mb-4">{movie.tagline}</p>}
             
-            <div className="flex flex-wrap items-center gap-4 mb-6">
-              <div className="flex items-center text-sm text-muted-foreground">
-                <Star size={18} className="mr-1.5 text-yellow-400 fill-yellow-400" />
-                <span className="font-semibold text-foreground">{movie.vote_average.toFixed(1)}</span>
-                <span className="ml-1">({movie.vote_count} votes)</span>
+            <div className="flex flex-wrap items-center gap-4 mb-6 text-sm">
+              <div className="flex items-center text-yellow-400">
+                <Star className="fill-current mr-1" size={16} />
+                <span className="font-bold text-foreground text-base">{movie.vote_average.toFixed(1)}</span>
               </div>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <CalendarDays size={18} className="mr-1.5" />
-                <span>{new Date(movie.release_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              <div className="flex items-center text-muted-foreground">
+                <CalendarDays className="mr-1" size={16} />
+                {new Date(movie.release_date).getFullYear()}
               </div>
               {movie.runtime && (
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Clapperboard size={18} className="mr-1.5" />
-                  <span>{movie.runtime} minutes</span>
+                <div className="flex items-center text-muted-foreground">
+                  <Clapperboard className="mr-1" size={16} />
+                  {movie.runtime} min
                 </div>
               )}
             </div>
 
-            {movie.genres && movie.genres.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold uppercase text-muted-foreground mb-2">Genres</h3>
-                <div className="flex flex-wrap gap-2">
-                  {movie.genres.map(genre => (
-                    <Badge key={genre.id} variant="secondary">{genre.name}</Badge>
-                  ))}
-                </div>
+            <div className="flex flex-wrap gap-2 mb-6">
+              {movie.genres?.map(g => (
+                <Badge key={g.id} variant="secondary">{g.name}</Badge>
+              ))}
+            </div>
+
+            <p className="text-lg leading-relaxed mb-8">{movie.overview}</p>
+
+            <div className="flex flex-wrap gap-4">
+              <Button size="lg" onClick={() => setPlayerVisible(!playerVisible)}>
+                <Play className="mr-2" /> {playerVisible ? 'Hide Player' : 'Watch Now'}
+              </Button>
+
+              {trailerKey && (
+                <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="lg">
+                      <YoutubeIcon className="mr-2" /> Trailer
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl aspect-video p-0 overflow-hidden">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
+                      className="w-full h-full"
+                      allowFullScreen
+                    />
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
+
+            {playerVisible && playerUrl && (
+              <div className="mt-8 aspect-video bg-black rounded-lg overflow-hidden border border-border">
+                <iframe src={playerUrl} className="w-full h-full" allowFullScreen allow="autoplay; fullscreen" />
               </div>
             )}
-            
-            <div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Overview</h3>
-              <p className="text-foreground/80 leading-relaxed whitespace-pre-wrap">{movie.overview}</p>
-            </div>
-
-            <div className="mt-8 space-y-4">
-              <h3 className="text-lg font-semibold text-foreground mb-2">Available Actions:</h3>
-              <div className="flex flex-wrap gap-2 items-center">
-                <Button 
-                  onClick={handleWatchClick} 
-                  variant="primary" 
-                  size="lg" 
-                  disabled={!canWatch}
-                  aria-label={playerVisible && playerUrl ? `Hide the VidSrc.sbs player for ${movie.title}` : `Watch ${movie.title} on VidSrc.sbs`}
-                >
-                    <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.sbs"}
-                </Button>
-                
-                {!canWatch && !movie?.id && <p className="text-sm text-muted-foreground">Movie ID not available for this source.</p>}
-                {trailerKey && (
-                  <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="lg">
-                        <YoutubeIcon className="mr-2 h-5 w-5" /> Watch Trailer
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-3xl p-0 z-[60]">
-                      <DialogHeader className="sr-only">
-                        <DialogTitle>{movie.title} Trailer</DialogTitle>
-                      </DialogHeader>
-                      <div className="aspect-video">
-                        <iframe
-                          width="100%"
-                          height="100%"
-                          src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
-                          title="YouTube video player"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                          allowFullScreen
-                          className="rounded-md"
-                        ></iframe>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </div>
-
-              <div
-                className={cn(
-                  "transition-all duration-500 ease-in-out overflow-hidden",
-                  playerVisible && playerUrl
-                    ? "opacity-100 max-h-[70vh] mt-6"
-                    : "opacity-0 max-h-0 mt-0"
-                )}
-              >
-                {playerVisible && playerUrl && (
-                  <>
-                    <div className="flex justify-between items-center mb-2">
-                        <p className="text-sm text-muted-foreground">
-                          Playing movie on: VidSrc.sbs
-                        </p>
-                        <Button onClick={closePlayer} variant="ghost" size="icon" className="h-8 w-8">
-                            <X className="h-4 w-4" />
-                            <span className="sr-only">Close Player</span>
-                        </Button>
-                    </div>
-                    <div className="aspect-video bg-black rounded-lg shadow-xl overflow-hidden border border-border">
-                        <iframe
-                            key={playerUrl} 
-                            src={playerUrl}
-                            title={`Watch ${movie.title} on VidSrc.sbs`}
-                            className="w-full h-full"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                            allowFullScreen
-                            referrerPolicy="no-referrer-when-downgrade"
-                        ></iframe>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
           </div>
         </div>
-        
+
         {recommendations.length > 0 && (
-          <div className="mt-12">
-            <ContentSlider items={recommendations} title="You Might Also Like" />
+          <div className="mt-16">
+            <ContentSlider items={recommendations} title="Recommended Movies" />
           </div>
         )}
         
