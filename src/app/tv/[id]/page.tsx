@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -108,7 +107,7 @@ export default function TVShowDetailPage() {
 
   useEffect(() => {
     if (tvShow && tvShow.id > 0 && selectedSeason !== null && selectedSeason > 0 && selectedEpisode !== null && selectedEpisode > 0) {
-      setPlayerUrl(`https://vidsrc.icu/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}`);
+      setPlayerUrl(`https://vidsrc.sbs/embed/tv/${tvShow.id}/${selectedSeason}/${selectedEpisode}?autoplay=1&color=e50914&sub=en&t=120&controls=0`);
     } else {
       setPlayerUrl(null);
     }
@@ -271,9 +270,9 @@ export default function TVShowDetailPage() {
                   variant="primary" 
                   size="lg"
                   disabled={!canWatch}
-                  aria-label={playerVisible && playerUrl ? `Hide the VidSrc.icu player for ${tvShow.name} S${selectedSeason}E${selectedEpisode}` : `Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.icu`}
+                  aria-label={playerVisible && playerUrl ? `Hide the VidSrc.sbs player for ${tvShow.name} S${selectedSeason}E${selectedEpisode}` : `Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.sbs`}
                 >
-                    <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.icu"}
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.sbs"}
                 </Button>
 
                 {trailerKey && (
@@ -316,7 +315,7 @@ export default function TVShowDetailPage() {
                   <>
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-sm text-muted-foreground">
-                          Playing Season {selectedSeason} Episode {selectedEpisode} on VidSrc.icu
+                          Playing Season {selectedSeason} Episode {selectedEpisode} on VidSrc.sbs
                         </p>
                          <Button onClick={closePlayer} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
@@ -327,7 +326,7 @@ export default function TVShowDetailPage() {
                         <iframe
                             key={playerUrl} 
                             src={playerUrl}
-                            title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.icu`}
+                            title={`Watch ${tvShow.name} S${selectedSeason}E${selectedEpisode} on VidSrc.sbs`}
                             className="w-full h-full"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             allowFullScreen

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -77,7 +76,7 @@ export default function MovieDetailPage() {
 
   useEffect(() => {
     if (canWatch && movie) {
-      setPlayerUrl(`https://vidsrc.icu/embed/movie/${movie.id}`);
+      setPlayerUrl(`https://vidsrc.sbs/embed/movie/${movie.id}?autoplay=1&color=e50914&sub=en&t=120&controls=0`);
     } else {
       setPlayerUrl(null);
     }
@@ -189,9 +188,9 @@ export default function MovieDetailPage() {
                   variant="primary" 
                   size="lg" 
                   disabled={!canWatch}
-                  aria-label={playerVisible && playerUrl ? `Hide the VidSrc.icu player for ${movie.title}` : `Watch ${movie.title} on VidSrc.icu`}
+                  aria-label={playerVisible && playerUrl ? `Hide the VidSrc.sbs player for ${movie.title}` : `Watch ${movie.title} on VidSrc.sbs`}
                 >
-                    <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.icu"}
+                    <Play className="mr-2 h-5 w-5" /> {playerVisible && playerUrl ? "Hide Player" : "Watch on VidSrc.sbs"}
                 </Button>
                 
                 {!canWatch && !movie?.id && <p className="text-sm text-muted-foreground">Movie ID not available for this source.</p>}
@@ -235,7 +234,7 @@ export default function MovieDetailPage() {
                   <>
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-sm text-muted-foreground">
-                          Playing movie on: VidSrc.icu
+                          Playing movie on: VidSrc.sbs
                         </p>
                         <Button onClick={closePlayer} variant="ghost" size="icon" className="h-8 w-8">
                             <X className="h-4 w-4" />
@@ -246,7 +245,7 @@ export default function MovieDetailPage() {
                         <iframe
                             key={playerUrl} 
                             src={playerUrl}
-                            title={`Watch ${movie.title} on VidSrc.icu`}
+                            title={`Watch ${movie.title} on VidSrc.sbs`}
                             className="w-full h-full"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                             allowFullScreen
