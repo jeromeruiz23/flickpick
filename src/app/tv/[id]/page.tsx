@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
 import { getTVShowDetails, type TVShow, type ContentItem, getTVShowRecommendations } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb-utils';
 import { Star, CalendarDays, Tv, Play, YoutubeIcon, Loader2 } from 'lucide-react';
@@ -14,9 +13,14 @@ import { Label } from '@/components/ui/label';
 import CommentSection from '@/components/CommentSection';
 import ContentSlider from '@/components/ContentSlider';
 
-export default function TVShowDetailPage() {
-  const params = useParams<{ id: string }>();
-  const tvId = Number(params.id);
+interface TVShowDetailPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function TVShowDetailPage({ params }: TVShowDetailPageProps) {
+  const resolvedParams = use(params);
+  const tvId = Number(resolvedParams.id);
+  
   const [show, setShow] = useState<TVShow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);

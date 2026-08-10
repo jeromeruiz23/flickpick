@@ -1,13 +1,13 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { use, useEffect, useState } from 'react';
 import useSWR from 'swr';
 import ContentGrid from '@/components/ContentGrid';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { ContentItem, Movie } from '@/lib/tmdb'; // Adjusted to import ContentItem as well for the grid
+import type { ContentItem, Movie } from '@/lib/tmdb';
 
 interface TMDBListResponse<T> {
   page: number;
@@ -25,9 +25,13 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
-export default function MoviesPage() {
-  const searchParams = useSearchParams();
-  const currentPage = Number(searchParams.get('page')) || 1;
+interface MoviesPageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default function MoviesPage({ searchParams }: MoviesPageProps) {
+  const resolvedSearchParams = use(searchParams);
+  const currentPage = Number(resolvedSearchParams.page) || 1;
 
   const { data: moviesResponse, error, isLoading } = useSWR<TMDBListResponse<Movie>>(
     `/api/movies/popular?page=${currentPage}`,
@@ -62,7 +66,7 @@ export default function MoviesPage() {
       <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-8 border-l-4 border-primary pl-4">
         Popular Movies
       </h1>
-      {popularMovies.length === 0 && !isLoading ? ( // Added !isLoading check to avoid brief "No movies" flash
+      {popularMovies.length === 0 && !isLoading ? (
          <div className="text-center py-10">
           <p className="text-lg text-muted-foreground">No popular movies found.</p>
         </div>
@@ -74,7 +78,6 @@ export default function MoviesPage() {
               <Link
                 href={`/movies?page=${currentPage - 1}`}
                 passHref
-                legacyBehavior // Maintained legacyBehavior as in original file
               >
                 <Button
                   variant="outline"
@@ -92,7 +95,6 @@ export default function MoviesPage() {
               <Link
                 href={`/movies?page=${currentPage + 1}`}
                 passHref
-                legacyBehavior // Maintained legacyBehavior as in original file
               >
                 <Button
                   variant="outline"

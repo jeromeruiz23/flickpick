@@ -1,13 +1,11 @@
-
 'use server';
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
-// Ensure this is set in your .env file
 if (!TMDB_API_KEY) {
   console.warn(
-    "Warning: TMDB_API_KEY environment variable is not set. Please ensure it's defined in your .env file and the server has been restarted. Some features may not work."
+    "Warning: TMDB_API_KEY environment variable is not set. Please ensure it's defined in your .env file."
   );
 }
 
@@ -15,13 +13,13 @@ interface VideoResult {
   id: string;
   iso_639_1: string;
   iso_3166_1: string;
-  key: string; // YouTube key
+  key: string;
   name: string;
   official: boolean;
   published_at: string;
-  site: string; // e.g., "YouTube"
+  site: string;
   size: number;
-  type: string; // e.g., "Trailer", "Teaser"
+  type: string;
 }
 
 interface MediaVideos {
@@ -30,10 +28,6 @@ interface MediaVideos {
 
 interface ExternalIds {
   imdb_id?: string | null;
-  // Add other external IDs here if needed in the future
-  // facebook_id?: string | null;
-  // instagram_id?: string | null;
-  // twitter_id?: string | null;
 }
 
 export interface Movie {
@@ -96,7 +90,7 @@ interface TMDBListResponse<T> {
 
 async function fetchTMDB<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
   if (!TMDB_API_KEY) {
-    throw new Error("TMDB_API_KEY is not configured. Please ensure it is set in your .env file and that you have restarted your development server. It appears to be missing, which will prevent TMDB API calls from working.");
+    throw new Error("TMDB_API_KEY is missing. Please check your .env file.");
   }
   
   const headers: HeadersInit = {
@@ -113,21 +107,15 @@ async function fetchTMDB<T>(endpoint: string, params: Record<string, string> = {
   try {
     const response = await fetch(url, { 
       headers,
-      next: { revalidate: 3600 } // Revalidate data every hour
+      next: { revalidate: 3600 }
     }); 
     if (!response.ok) {
-      console.error(`Error fetching ${url}: ${response.status} ${response.statusText}`);
-      const errorBody = await response.text();
-      console.error("Error body:", errorBody);
       throw new Error(`Failed to fetch data from TMDB: ${response.statusText}`);
     }
     return response.json();
   } catch (error) {
-    console.error(`Network error or JSON parsing error fetching ${url}:`, error);
-    if (error instanceof Error) {
-        throw new Error(`TMDB API request failed: ${error.message}`);
-    }
-    throw new Error('An unknown error occurred while fetching from TMDB.');
+    console.error(`TMDB error fetching ${url}:`, error);
+    throw error;
   }
 }
 
@@ -147,21 +135,12 @@ export async function getPopularTVShows(page: number = 1): Promise<TMDBListRespo
   };
 }
 
-export async function getTopRatedMovies(page: number = 1): Promise<TMDBListResponse<Movie>> {
-  const data = await fetchTMDB<TMDBListResponse<Movie>>('movie/top_rated', { page: page.toString() });
-  return {
-    ...data,
-    results: data.results.map(item => ({ ...item, media_type: 'movie' }))
-  };
-}
-
 export async function getTrendingAllWeek(page: number = 1): Promise<TMDBListResponse<ContentItem>> {
   return fetchTMDB<TMDBListResponse<ContentItem>>('trending/all/week', { page: page.toString() });
 }
 
 export async function searchContent(query: string, page: number = 1): Promise<TMDBListResponse<ContentItem>> {
   const data = await fetchTMDB<TMDBListResponse<any>>('search/multi', { query, page: page.toString(), include_adult: 'false' });
-  // Filter out persons or other non-movie/tv media types
   return {
     ...data,
     results: data.results.filter(item => (item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path)

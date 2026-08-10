@@ -1,31 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
 import { getMovieDetails, type Movie, type ContentItem, getMovieRecommendations } from '@/lib/tmdb';
 import { getImageUrl } from '@/lib/tmdb-utils';
-import { Star, CalendarDays, Clapperboard, Play, X, YoutubeIcon } from 'lucide-react';
+import { Star, CalendarDays, Clapperboard, Play, YoutubeIcon, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import CommentSection from '@/components/CommentSection';
 import ContentSlider from '@/components/ContentSlider';
 
-export default function MovieDetailPage() {
-  const params = useParams<{ id: string }>();
-  const movieId = Number(params.id);
+interface MovieDetailPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function MovieDetailPage({ params }: MovieDetailPageProps) {
+  const resolvedParams = use(params);
+  const movieId = Number(resolvedParams.id);
+  
   const [movie, setMovie] = useState<Movie | null>(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
   const [playerVisible, setPlayerVisible] = useState(false); 
-  const [playerUrl, setPlayerUrl] = useState<string | null>(null);
-
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
-  const [showTrailerModal, setShowTrailerModal] = useState(false);
   const [recommendations, setRecommendations] = useState<ContentItem[]>([]);
 
   useEffect(() => {
@@ -55,14 +54,10 @@ export default function MovieDetailPage() {
     fetchMovie();
   }, [movieId]);
 
-  useEffect(() => {
-    if (movie?.id) {
-      setPlayerUrl(`https://vidsrc.sbs/embed/movie/${movie.id}?autoplay=1&color=e50914&sub=en&t=120&controls=0`);
-    }
-  }, [movie]);
-
   if (isLoading) return <div className="flex justify-center items-center min-h-screen"><Loader2 className="animate-spin h-12 w-12 text-primary" /></div>;
   if (errorOccurred || !movie) return <div className="text-center py-20"><h1 className="text-2xl font-bold">Movie not found</h1></div>;
+
+  const playerUrl = `https://vidsrc.sbs/embed/movie/${movie.id}?autoplay=1&color=e50914&sub=en&t=120&controls=0`;
 
   return (
     <div className="min-h-screen">
@@ -127,7 +122,7 @@ export default function MovieDetailPage() {
               </Button>
 
               {trailerKey && (
-                <Dialog open={showTrailerModal} onOpenChange={setShowTrailerModal}>
+                <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="outline" size="lg">
                       <YoutubeIcon className="mr-2" /> Trailer
@@ -144,7 +139,7 @@ export default function MovieDetailPage() {
               )}
             </div>
 
-            {playerVisible && playerUrl && (
+            {playerVisible && (
               <div className="mt-8 aspect-video bg-black rounded-lg overflow-hidden border border-border">
                 <iframe src={playerUrl} className="w-full h-full" allowFullScreen allow="autoplay; fullscreen" />
               </div>
