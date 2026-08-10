@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -24,6 +25,7 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  serverExternalPackages: ['genkit', '@genkit-ai/googleai', '@genkit-ai/next'],
 };
 
 export default nextConfig;
